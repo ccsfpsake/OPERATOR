@@ -1,0 +1,165 @@
+.homeContainer {
+  margin: auto;
+  font-family: "Poppins", sans-serif;
+  overflow-x: hidden;
+}
+
+.heroSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 60px 5%;
+  background-image: url("/service.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  border-bottom: 1px solid #0056b3;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.heroSection::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5); 
+  z-index: 0;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 1;
+  max-width: 600px;
+  padding: 20px;
+  text-align: center;
+  animation: fadeInUp 0.8s ease-out;
+  max-width: 90%;
+}
+
+.heroContent h1 {
+  font-size: 2.8rem;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 10px;
+  line-height: 1.2;
+}
+
+.heroContent .highlight {
+  font-size: 4rem;
+  color: #ffffff;
+}
+
+.heroContent p {
+  font-size: 1.2rem;
+  color: #ffffff;
+  margin: 20px 0 40px;
+}
+
+.buttonContainer {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.button {
+  padding: 15px 40px;
+  font-size: 1.1rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border: none;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+}
+
+.button:hover {
+  background: linear-gradient(135deg, #0056b3, #003f7f);
+  transform: translateY(-3px);
+}
+
+.button:active {
+  transform: translateY(1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #ecf0f4;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #ddd;
+  border-top: 5px solid #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+@media (max-width: 1024px) {
+  .heroContent h1 {
+    font-size: 2.2rem;
+  }
+  .heroContent .highlight {
+    font-size: 3.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .heroSection {
+    padding: 40px 5%;
+  }
+
+  .heroContent h1 {
+    font-size: 2rem;
+  }
+
+  .heroContent .highlight {
+    font-size: 2.5rem;
+  }
+
+  .heroContent p {
+    font-size: 1rem;
+  }
+
+  .button {
+    font-size: 1rem;
+    padding: 12px 30px;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroContent h1 {
+    font-size: 1.6rem;
+  }
+
+  .heroContent .highlight {
+    font-size: 2rem;
+  }
+
+  .heroContent p {
+    font-size: 0.95rem;
+  }
+
+  .button {
+    font-size: 0.95rem;
+    padding: 10px 25px;
+  }
+}

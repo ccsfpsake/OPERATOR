@@ -1,0 +1,66 @@
+.systemLogoContainer {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.logoPreview {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.logoImage {
+  width: 150px;
+  height: auto;
+  border: 1px solid #ccc;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.select,
+.input {
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.previewContainer {
+  margin-top: 15px;
+  text-align: center;
+}
+
+.previewImage {
+  width: 150px;
+  height: auto;
+  border: 1px solid #ccc;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.button:hover {
+  background-color: #0056b3;
+}

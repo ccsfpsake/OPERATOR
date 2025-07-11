@@ -1,0 +1,94 @@
+.card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 500px;
+    gap: 15px;
+    font-family: Arial, Helvetica, sans-serif;
+    border: 1px solid #4e97da;
+}
+
+.number {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2e274a;
+    margin-left: 15px;
+}
+
+.title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #6c757d;
+    margin: 0;
+}
+
+.texts {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: hsl(204, 89%, 33%);
+    color: #ffffff;
+    padding: 12px;
+    border-radius: 50%;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+    .card {
+        padding: 15px;
+        gap: 10px;
+        max-width: 100%;
+    }
+
+    .number {
+        font-size: 24px;
+        margin-left: 10px;
+    }
+
+    .title {
+        font-size: 12px;
+    }
+
+    .icon {
+        padding: 8px;
+    }
+}
+
+@media (max-width: 320px) {
+    .card {
+        flex-direction: column;
+        padding: 12px;
+        gap: 8px;
+    }
+
+    .number {
+        font-size: 22px;
+        margin-left: 0;
+    }
+
+    .title {
+        font-size: 12px;
+    }
+
+    .icon {
+        padding: 6px;
+        width: 36px;
+        height: 36px;
+    }
+
+    .texts {
+        align-items: center;
+    }
+}

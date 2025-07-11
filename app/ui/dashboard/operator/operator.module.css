@@ -1,0 +1,163 @@
+.container {
+    background-color: var(--bgSoft);
+    padding: 30px;
+    border-radius: 15px;
+    margin: 20px auto;
+    width: 100%; 
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, Helvetica, sans-serif;
+    border-color:  #4e97da;;
+  }
+  
+  .top {
+    display: flex;
+    justify-content: right;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap; 
+  }
+  
+  .semititle {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: 10px;
+}
+
+.table {
+  width: 100%;
+  min-width: 800px; 
+  font-size: 16px;
+  border-collapse: collapse;
+  border: 1px solid #ccc;
+}
+
+
+.table th, .table td {
+  padding: 5px;
+  text-align: center;
+  border: 1px solid #ccc;
+}
+
+.table th {
+  background: #1976d2;
+  color: #ffffff;
+  justify-content: center;
+  padding: 10px;
+}
+
+.table td:last-child, .table th:last-child {
+  border-right: none;
+}
+
+.table tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.table tbody tr:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
+}
+.noData {
+  text-align: center;
+  padding: 10px;
+  color: #999;
+  font-style: italic;
+}
+
+  .user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 10px;
+  }
+  
+  .userImage {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+  
+  .table select {
+    padding: 8px 12px;
+    font-size: 14px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: white;
+    color: #333;
+    cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+  }
+  
+  .table select:hover {
+    border-color: #1877f2;
+  }
+  
+  .table select:focus {
+    outline: none;
+    border-color: #1877f2;
+    box-shadow: 0 0 5px rgba(24, 119, 242, 0.5);
+  }
+ 
+  .button {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    justify-content: center;
+    align-items: center;
+  }
+  
+.delete {
+  background-color: #f44336;
+  color: white;
+  justify-content: center;
+  align-items: center;
+}
+
+
+.delete:hover {
+  background-color: #e53935;
+}
+
+  @media screen and (max-width: 768px) {
+    .container {
+      padding: 20px;
+    }
+  
+    .table {
+      font-size: 14px;
+    }
+    .semititle {
+      font-size: 15px;
+
+    }
+    .table td, .table th {
+      padding: 8px;
+    }
+  }
+  
+  @media screen and (max-width: 480px) {
+    .userImage {
+      width: 30px;
+      height: 30px;
+    }
+  
+    .container {
+      margin: 10px auto;
+    }
+  
+    .submitButton {
+      font-size: 13px;
+    }
+  }
+  

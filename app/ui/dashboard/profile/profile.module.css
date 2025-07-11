@@ -1,0 +1,76 @@
+.profile {
+  background-color: var(--bgSoft);
+  padding: 30px;
+  border-radius: 15px;
+  margin: 20px auto;
+  max-width: 600px; 
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family:Arial, Helvetica, sans-serif;
+    border: 1px solid #4e97da;
+}
+
+.header {
+  text-align: center;
+}
+
+.avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.h1 {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+}
+
+.role {
+  font-size: 18px;
+  color: #777;
+}
+
+
+
+.details p {
+  font-size: 16px;
+  color: #444;
+  margin: 10px 0;
+  color: black;
+  
+}
+
+.strong {
+  font-weight: bold;
+  color: #333;
+}
+
+@media (max-width: 600px) {
+  .profile {
+    margin-top: 10px;
+  }
+
+  .details {
+    width: 90%;
+    padding: 15px;
+  }
+
+  .h1 {
+    font-size: 20px;
+  }
+
+  .avatar {
+    width: 100px;
+    height: 100px;
+  }
+
+  .role {
+    font-size: 16px;
+  }
+
+  .details p {
+    font-size: 14px;
+  }
+}

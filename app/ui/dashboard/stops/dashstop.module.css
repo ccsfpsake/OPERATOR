@@ -1,0 +1,63 @@
+.stop-container {
+  max-width: 700px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  font-family: Arial, sans-serif;
+}
+
+.stop-title {
+  font-size: 1.75rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.stop-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.stop-card {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.stop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stop-line {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.stop-count {
+  background-color: transparent;
+  border: none;
+  color: #007bff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.2s ease-in-out;
+}
+
+.stop-count:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}
+
+.stop-sublist {
+  margin-top: 1rem;
+  padding-left: 1.5rem;
+  list-style: disc;
+  color: #333;
+}
+
+.stop-item {
+  margin-bottom: 0.3rem;
+}

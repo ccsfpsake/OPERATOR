@@ -1,0 +1,93 @@
+.container {
+  background-color: var(--bgSoft);
+  padding: 20px;
+  border-radius: 15px;
+  margin: 20px auto;
+  width: 100%;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+}
+
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th,
+.table td {
+  padding: 8px;
+  border: 1px solid #ccc;
+  text-align: center;
+}
+.dateCell {
+  display: flex;
+  align-items: center;
+}
+
+.arrow {
+  width: 20px; 
+  display: inline-block;
+}
+
+.table thead th {
+  background: #1976d2;
+  color: #ffffff;
+  padding: 12px;
+  text-align: center;
+  border-bottom: 1px solid #ccc;
+}
+
+.table tbody tr:not(.subRow) {
+  font-weight: bold;
+}
+
+.subRow td:first-child {
+  padding-left: 35px;
+  font-style: italic;
+  color: #444;
+}
+
+.table tbody tr:hover {
+  background-color: #f1f1f1;
+  cursor: pointer;
+}
+
+.noData {
+  text-align: center;
+  font-size: 1rem;
+  color: #888888;
+  padding: 20px 0;
+  font-display: italic;
+}
+
+@media screen and (max-width: 768px) {
+  .container {
+    padding: 20px;
+  }
+
+  .table {
+    font-size: 13px;
+  }
+
+  .top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}

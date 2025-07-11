@@ -1,0 +1,491 @@
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  gap: 1rem;
+  padding: 20px;
+  background: #ecf0f4;
+  font-family: sans-serif;
+}
+
+.logoSection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 700px; 
+}
+
+.logo {
+  width: 100%;       
+  max-width: 700px;  
+  height: auto;
+}
+
+
+.card {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 12px 16px 24px rgba(0, 13, 255, 0.1);
+  max-width: 400px;
+  width: 100%;
+  border: 2px solid #007bff;
+  height: auto;
+}
+.error {
+  color: red;
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #007bff;
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 1;
+}
+
+.progressBar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+}
+
+.stepNumber {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #333;
+  font-weight: bold;
+}
+
+.stepLabel {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: #000;
+  text-align: center;
+}
+
+.completed .stepNumber {
+  background-color: #1b00ff;
+  color: #fff;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.inputGroup {
+  margin-bottom: 3px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  margin-left: 10px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #0070f3;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+  color: black;
+}
+
+.preview {
+  font-size: 20px;
+  color: #000;
+  margin-bottom: 3px;
+  margin-top: 1px;
+  font-weight: 300;
+}
+
+.preview h3 {
+  font-size: 25px;
+  margin-bottom: 10px;
+}
+
+.preview p {
+  margin-bottom: 1px;
+  font-size: 17px;
+}
+
+.buttonGroup {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 7rem;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 9px;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.button:hover {
+  opacity: 0.9;
+}
+
+.okButton {
+  background-color: #26bf00;
+  color: white;
+  border: 2px solid #26bf00;
+}
+
+.okButton:hover {
+  background-color: #26bf00;
+}
+
+.blueButton,
+.submitButton {
+  background-color: #1b00ff;
+  color: white;
+  border: 2px solid #1b00ff;
+}
+
+.blueButton:hover,
+.submitButton:hover {
+  background-color: #0e00cc;
+  border-color: #0e00cc;
+}
+
+.yellowButton {
+  background-color: #ffcc00;
+  color: black;
+  border: 2px solid #ffcc00;
+}
+
+.yellowButton:hover {
+  background-color: #e6b800;
+}
+
+.grayButton {
+  background-color: #d1d5db;
+  color: #374151;
+}
+
+.grayButton:hover {
+  background-color: #e5e7eb;
+}
+
+.redButton {
+  background-color: red;
+  color: white;
+  border: 2px solid red;
+}
+
+.redButton:hover {
+  background-color: #cc0000;
+}
+
+.agreeButton {
+  background-color: #13b313;
+  color: white;
+  border: 2px solid green;
+}
+
+.agreeButton:hover {
+  background-color: #0f8d0f;
+  transform: scale(1.02);
+}
+
+.okButton{
+  background-color: #1b00ff;
+  color: white;
+  border: 1.5px solid #1b00ff;
+}
+
+.okButton:hover{
+  background-color: #0e00cc;
+  border-color: #0e00cc;
+}
+.link {
+  color: #0066cc;
+  text-decoration: none;
+  font-weight: bold;
+  transition: color 0.3s ease;
+}
+
+.link:hover,
+.link:focus {
+  color: #005bb5;
+  text-decoration: underline;
+}
+
+.loginLink {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 15px;
+}
+
+.modalOverlay,
+.modalOver {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  overflow-y: auto;
+}
+
+.modal,
+.modalterm {
+  position: relative;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal h2,
+.modalterm h2 {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.modal p,
+.modalterm p {
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+.modalterm p{
+  text-align: justify;
+}
+.modal p{
+    font-size: 1.2rem;
+}
+.icon {
+  font-size: 30px;
+  color: rgb(21, 189, 21);
+}
+
+.closeButton {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.closeButton:hover {
+  color: red;
+}
+
+.buttonmodal {
+  display: flex;
+  margin-top: 0.5rem;
+  width: 100%;
+  gap: 2rem;
+  justify-content: center;
+}
+
+.parentContainer {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 7rem;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  margin: 9px auto;
+}
+
+@media (max-width: 1024px) {
+  .container {
+    flex-direction: row;
+    padding: 20px;
+    height: auto;
+  }
+
+  .logoSection {
+    max-width: 100%;
+    margin-bottom: 1rem;
+    justify-content: center;
+    max-width: 300px; 
+  }
+  .logo {
+    width: 100%;        
+    max-width: 300px;   
+    height: auto;
+  }
+  .card {
+    width: 100%;
+    max-width: 500px;
+    padding: 1.75rem;
+    height: auto;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+
+  .stepNumber {
+    width: 35px;
+    height: 35px;
+    font-size: 0.85rem;
+  }
+
+  .stepLabel {
+    font-size: 0.8rem;
+  }
+
+  .preview {
+    font-size: 18px;
+  }
+
+  .preview h3 {
+    font-size: 22px;
+  }
+
+.modal,
+.modalterm {
+  position: relative;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+
+  .modal h2,
+  .modalterm h2 {
+    font-size: 22px;
+  }
+
+  .modal p,
+  .modalterm p {
+    font-size: 0.95rem;
+  }
+
+  .loginLink,
+  .checkboxGroup .label {
+    font-size: 13px;
+    text-align: center;
+  }
+}
+
+@media (max-width: 769px) {
+  .container {
+    flex-direction: column;
+    padding: 15px;
+    gap: 1rem;
+    height: auto; 
+  }
+
+  .logoSection {
+    max-width: 100%;
+    margin-bottom: 1rem;
+    justify-content: center;
+  }
+
+  .card {
+    width: 100%;
+    padding: 1.25rem;
+  }
+
+  .title {
+    font-size: 1.3rem;
+  }
+
+  .stepNumber {
+    width: 30px;
+    height: 30px;
+    font-size: 0.75rem;
+  }
+
+  .stepLabel {
+    font-size: 0.7rem;
+    text-align: center;
+  }
+
+  .preview {
+    font-size: 17px;
+  }
+
+  .preview h3 {
+    font-size: 20px;
+  }
+
+ .modal,
+.modalterm {
+  position: relative;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+
+  .modal h2,
+  .modalterm h2 {
+    font-size: 20px;
+  }
+
+  .modal p,
+  .modalterm p {
+    font-size: 0.9rem;
+  }
+
+  .loginLink,
+  .checkboxGroup .label {
+    font-size: 11px;
+    text-align: center;
+  }
+}
+

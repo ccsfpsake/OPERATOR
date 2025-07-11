@@ -1,0 +1,116 @@
+.leaderboardCard {
+  width: 100%;
+  padding: 20px;
+  background-color: #ffffff;
+  border: 1px solid #4e97da;
+  border-radius: 12px;
+  box-sizing: border-box;
+  text-align: center;
+  overflow: hidden;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 14px;
+  color: #1e3a8a;
+}
+
+.selectFilter {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.tableWrapper {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 300px; 
+  border-collapse: collapse;
+  background: white;
+  font-size: 14px;
+}
+
+.table th,
+.table td {
+  padding: 6px 8px;
+  text-align: center;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.table th {
+  background-color: #007bff;
+  color: white;
+  font-weight: 600;
+}
+
+.table tbody tr:hover {
+  background-color: #f0f8ff;
+}
+
+.noData {
+  text-align: center;
+  font-size: 1rem;
+  color: #888888;
+  padding: 20px 0;
+}
+
+.textRed {
+  color: #e53935;
+  font-weight: bold;
+}
+
+.textOrange {
+  color: #fb8c00;
+  font-weight: bold;
+}
+
+.textYellow {
+  color: #fdd835;
+  font-weight: bold;
+}
+
+.legend {
+  margin-top: 5px;
+  display: flex;
+  justify-content: space-around;
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 5px;
+}
+
+.legendBox {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  border: 1px solid #aaa;
+  vertical-align: middle;
+}
+
+.legendRed {
+  background-color: #e53935;
+}
+
+.legendOrange {
+  background-color: #fb8c00;
+}
+
+.legendYellow {
+  background-color: #fdd835;
+}

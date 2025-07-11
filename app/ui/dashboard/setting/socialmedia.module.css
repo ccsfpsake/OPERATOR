@@ -1,0 +1,99 @@
+.Container {
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.textarea {
+  width: 50%;
+  height: 290px; 
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  overflow: auto; 
+  resize: none; 
+}
+.button {
+  width: fit-content; 
+  padding: 10px 20px; 
+}
+
+.button:hover {
+  background-color: #0056b3;
+}
+
+@media (max-width: 768px) {
+  .aboutUsEditContainer {
+    width: 90%;
+    padding: 15px;
+  }
+
+  .textarea {
+    font-size: 13px;
+  }
+
+  .button {
+    font-size: 14px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .aboutUsEditContainer {
+    width: 95%;
+  }
+
+  .label {
+    font-size: 14px;
+  }
+
+  .textarea {
+    font-size: 12px;
+    min-height: 80px;
+  }
+
+  .button {
+    font-size: 13px;
+    padding: 7px;
+  }
+}
+
+@media (max-width: 320px) {
+  .aboutUsEditContainer {
+    padding: 10px;
+  }
+
+  .label {
+    font-size: 13px;
+  }
+
+  .textarea {
+    font-size: 12px;
+    min-height: 70px;
+  }
+
+  .button {
+    width: fit-content; 
+    padding: 6px 12px; 
+    display: block; 
+    margin: 0 auto; 
+  }
+}

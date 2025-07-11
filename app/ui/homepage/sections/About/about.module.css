@@ -1,0 +1,207 @@
+.aboutSection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 3rem 1rem;
+  background-color: #ecf0f4;
+  min-height: 100vh;
+  border-bottom: 1px solid #0056b3;
+  flex-direction: column;
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden; 
+}
+
+.wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 1rem; 
+}
+
+.textSection {
+  text-align: center;
+  width: 100%;
+  max-width: 900px;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  box-sizing: border-box;
+  padding: 0 1rem;
+}
+
+.textSection h2 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  color: #333;
+  margin-bottom: 1.25rem;
+}
+
+.textSection p {
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  color: #555;
+  text-align: justify;
+  line-height: 1.8;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.extraInfo {
+  display: flex;
+  flex-wrap: nowrap; 
+  gap: 1.875rem;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-x: auto; 
+  padding: 0 1rem;
+}
+
+.card {
+  background-color: white;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  flex: 1 1 350px;
+  max-width: 500px;
+  box-sizing: border-box;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  min-width: 280px; 
+}
+
+.card h3 {
+  color: #007bff;
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  margin-bottom: 0.625rem;
+  text-align: center;
+}
+
+.card p {
+  font-size: clamp(0.9rem, 2vw, 1.2rem);
+  color: #555;
+  text-align: justify;
+  line-height: 1.6;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 1024px) {
+   .aboutSection {
+  padding-top: 5.3rem; 
+  }
+  .extraInfo {
+    flex-wrap: wrap;
+    overflow-x: visible; 
+    gap: 1.25rem;
+  }
+
+  .card {
+    flex: 1 1 45%;
+    max-width: 45%;
+    min-width: auto;
+  }
+  .textSection p {
+    font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+    line-height: 1.5;
+  }
+  
+  .textSection h2 {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+  }
+
+  .textSection p,
+  .card p {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+  }
+
+  .card h3 {
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
+  }
+}
+
+
+@media (max-width: 768px) {
+
+    .aboutSection {
+  padding-top: 5.3rem; 
+  }
+
+.wrapper {
+  gap:1rem
+}
+  .textSection {
+    padding: 0 1rem;
+    max-width: 100%;
+  }
+
+  .textSection p {
+    font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+    line-height: 1.5;
+  }
+  
+  .textSection h2 {
+    font-size: clamp(1.5rem, 5vw, 2rem);
+  }
+
+  .textSection p,
+  .card p {
+    font-size: clamp(0.9rem, 2.5vw, 1rem);
+  }
+
+  .card h3 {
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
+  }
+
+  .extraInfo {
+    flex-direction: column; 
+    gap: 1rem;
+  }
+
+  .card {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+}
+@media (max-width: 480px) {
+  .card {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .textSection {
+    padding: 0 0.5rem;
+  }
+
+  .wrapper {
+    padding: 0 0.5rem;
+  }
+  .extraInfo {
+    gap: 0.5rem;
+  }
+
+  .textSection p {
+    font-size: 0.6rem; 
+    line-height: 1.4;
+    margin-bottom: 0, 0, 0;
+  }
+.textSection {
+    margin-bottom:0%;
+  }
+  .textSection h2 {
+    font-size: 1rem; 
+  }
+
+  .card p {
+    font-size: 0.7rem;
+  }
+
+  .card h3 {
+    font-size: 0.9rem;
+  }
+}

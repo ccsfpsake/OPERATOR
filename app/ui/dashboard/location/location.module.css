@@ -1,0 +1,378 @@
+.mapContainer {
+  background-color: var(--bgSoft);
+  padding: 2rem;
+  border-radius: 15px;
+  margin: 1rem auto;
+  width: 100%;
+  border: 1px solid #4e97da;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
+  flex: 1;
+  position: relative;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 10px;
+}
+
+.userImage {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.searchContainer {
+  padding: 10px;
+  display: flex;
+justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-radius: 10px;
+}
+
+.searchInput {
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #dcdfe3;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.3s;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 300px;
+  width: fit-content;
+}
+
+.searchInput:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+}
+
+.statusReportContainer {
+  background-color: var(--bgSoft);
+  padding: 2rem;
+  border-radius: 15px;
+  margin: 1rem auto;
+  width: 100%;
+  border: 1px solid #4e97da;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  font-family: Arial, Helvetica, sans-serif;
+  box-sizing: border-box;
+}
+
+.statusReportTitle {
+  margin-bottom: 0.3rem;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #d32f2f;
+  text-align: center;
+  padding: 10px;
+  border-radius: 8px 8px 0 0;
+}
+
+.chatContainer {
+  margin-top: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chatMessages {
+  height: 200px;
+  overflow-y: auto;
+  background: white;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+}
+
+.chatMessage {
+  padding: 0.25rem 0;
+  font-size: 0.9rem;
+}
+
+.chatInputBox {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.chatInput {
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  min-width: 0;
+}
+
+.sendButton {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.idleTableWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+.noData {
+  text-align: center;
+  font-size: 1rem;
+  color: #888888;
+  padding: 20px 0;
+}
+
+.statusTable {
+  min-width: 600px; 
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tableScroll {
+  overflow-x: auto;
+  display: block;
+  width: 100%;
+}
+
+.statusTable {
+  width: 100%;
+  min-width: 600px;
+  border-collapse: collapse;
+  border: 1px solid #ccc;
+}
+
+
+.statusTable thead {
+  background: #1976d2;
+  color: #ffffff;
+}
+
+.statusTable th,
+.statusTable td {
+  padding: 5px;
+  text-align: center;
+  border: 1px solid #ccc;
+}
+
+.statusTable th {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.statusTable td {
+  color: #444;
+}
+
+.idle {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.infoWindow {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.9rem;
+  color: #333;
+  padding: 0.5rem 1rem;
+  max-width: 200px;
+}
+
+.loading {
+  font-size: 0.95rem;
+  color: #64748b;
+  margin: 10px 0;
+  text-align: center;
+}
+
+.mapAndChatWrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.mapAndStatusWrapper {
+  flex: 2;
+  width: 100%;
+}
+
+.chatWrapper {
+  width: 100%;
+  height: 50%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pagination {
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pagination button {
+  padding: 5px 10px;
+  cursor: pointer;
+  border: none;
+  border-radius: 4px;
+}
+
+.pagination button:hover {
+  background-color: #4e97da;
+  color: white;
+}
+
+/* MEDIA QUERIES */
+@media (max-width: 768px) {
+  .mapContainer,
+  .statusReportContainer,
+  .chatContainer {
+    padding: 1rem;
+  }
+
+  .chatMessages {
+    height: 150px;
+  }
+
+  .statusTable {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .chatInputBox {
+    flex-direction: column;
+  }
+
+  .sendButton {
+    width: 100%;
+  }
+
+  .searchInput {
+    font-size: 0.9rem;
+    width: 100%;
+  }
+
+  .statusReportTitle {
+    font-size: 1rem;
+  }
+
+  .chatMessage {
+    font-size: 0.8rem;
+  }
+
+  .pagination {
+    justify-content: center;
+  }
+
+  .mapAndChatWrapper {
+    flex-direction: column;
+  }
+
+  .userImage {
+    width: 30px;
+    height: 30px;
+  }
+
+  .statusTable {
+    font-size: 11px;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 360px) {
+  .chatMessages {
+    height: 130px;
+    padding: 0.4rem;
+  }
+
+  .statusTable th,
+  .statusTable td {
+    padding: 4px;
+    font-size: 11px;
+  }
+
+  .statusReportTitle {
+    font-size: 0.9rem;
+  }
+
+  .chatMessage {
+    font-size: 0.75rem;
+  }
+
+  .searchInput {
+    font-size: 0.85rem;
+  }
+
+  .sendButton {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 320px) {
+  .mapAndChatWrapper,
+  .chatWrapper,
+  .mapAndStatusWrapper {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .statusReportTitle {
+    font-size: 0.85rem;
+    padding: 6px;
+  }
+
+  .chatMessages {
+    height: 120px;
+  }
+
+  .chatInput {
+    font-size: 0.85rem;
+  }
+
+  .searchContainer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+  }
+
+  .searchInput {
+    max-width: 100%;
+    font-size: 0.8rem;
+  }
+
+  .sendButton {
+    font-size: 0.8rem;
+    padding: 0.4rem;
+  }
+
+  .pagination button {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+  }
+
+  .statusTable {
+    font-size: 10px;
+  }
+
+  .userImage {
+    width: 28px;
+    height: 28px;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+  }
+}

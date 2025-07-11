@@ -1,0 +1,257 @@
+.container {
+  background: linear-gradient(145deg, #ffffff, #f3f3f3);
+  padding: 30px;
+  border-radius: 15px;
+  margin: 20px auto;
+  max-width: 800px;
+  border: 1px solid #ddd;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  font-family: "Poppins", Arial, Helvetica, sans-serif;
+}
+
+.heading {
+  font-size: 26px;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20px;
+  text-align: center;
+}
+.fromToContainer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.select {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+}
+
+.dash {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.imageContainer {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin-bottom: 20px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.avatarPreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #3b82f6;
+}
+
+.editIcon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  background-color: #3b82f6;
+  color: #ffffff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  font-size: 18px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.editIcon:hover {
+  transform: scale(1.2);
+  background-color: #2563eb;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+  width: 100%;
+}
+.select {
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  width: 100%;
+  background-color: #ffffff;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20width%3D%2210%22%20height%3D%225%22%20viewBox%3D%220%200%2010%205%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Cpath%20d%3D%22M0%200l5%205%205-5z%22%20fill%3D%22%236b7280%22/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 10px 5px;
+}
+
+.select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+}
+
+.label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.input {
+  padding: 10px;
+  font-size: 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 5px;
+  width: 100%;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.buttons button {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 10px;
+  border: none;
+  color: #ffffff;
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.buttons .submit {
+  background: linear-gradient(145deg, #3b82f6, #7da4e4);
+}
+
+.buttons .submit:hover {
+  background: linear-gradient(145deg, #3b82f6, #7da4e4);
+}
+
+.buttons .cancel {
+  background: #a8a7a7;
+}
+
+.buttons .cancel:hover {
+  background: #777777;
+}
+
+.successModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.successModalContent {
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+}
+
+.successModalContent h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+}
+
+.successModalContent button {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.successModalContent button:hover {
+  background-color: #2563eb;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+    max-width: 90%;
+  }
+
+  .heading {
+    font-size: 22px;
+  }
+
+  .input {
+    font-size: 13px;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 15px;
+    max-width: 100%;
+  }
+
+  .heading {
+    font-size: 20px;
+  }
+
+  .input {
+    font-size: 12px;
+    padding: 7px;
+  }
+
+  .successModalContent h2 {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 320px) {
+  .container {
+    padding: 10px;
+  }
+
+  .heading {
+    font-size: 18px;
+  }
+
+  .input {
+    font-size: 12px;
+    padding: 6px;
+  }
+
+  .successModalContent h2 {
+    font-size: 16px;
+  }
+}

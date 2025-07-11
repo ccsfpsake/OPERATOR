@@ -1,0 +1,21 @@
+.container {
+    padding: 20px;
+  }
+  
+  .input, .textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+  }
+  
+  .img {
+    max-width: 100px;
+    margin-top: 10px;
+  }
+  

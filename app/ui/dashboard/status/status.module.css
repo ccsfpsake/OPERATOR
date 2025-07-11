@@ -1,0 +1,105 @@
+.container {  
+  width: 100%;
+  padding: 20px;
+  background-color: #ffffff;
+  border: 1px solid #4e97da;
+  border-radius: 12px;
+  box-sizing: border-box;
+  text-align: center;
+  overflow: hidden;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #1e3a8a;
+  margin: 0;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.select {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 500px; 
+  border-collapse: collapse;
+  font-size: 14px; 
+  overflow-y: auto;
+}
+
+.table th,
+.table td {
+  padding: 6px 8px; 
+  text-align: center;
+  border: 1px solid #ccc;
+  font-size: 14px; 
+}
+
+.table th {
+  background-color: #007bff;
+  color: white;
+  font-weight: 600;
+}
+
+.table tr:hover {
+  background-color: #f1f1f1;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 6px; 
+  margin-left: 6px; 
+}
+
+.userImage {
+  width: 30px; 
+  height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.activeStatus {
+  color: green;
+  font-weight: bold;
+  font-size: 12px; 
+}
+
+.inactiveStatus {
+  color: red;
+  font-weight: bold;
+  font-size: 12px;
+}
+
+.noData {
+  text-align: center;
+  padding: 15px;
+  font-style: italic;
+  color: #888;
+  font-size: 12px; 
+}

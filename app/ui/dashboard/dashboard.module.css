@@ -1,0 +1,84 @@
+.container {
+  width: 100%;
+  padding-bottom: 10px;
+  box-sizing: border-box;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.cards{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+.spinnerContainer {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  gap: 1rem;
+  color: #555;
+}
+
+.graph {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.operatorRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  width: 100%;
+}
+
+.driverColumn {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  width: 100%;
+}
+
+.cards > div,
+.operatorRow > div,
+.driverColumn > div,
+.graph > div {
+  flex: 1;
+}
+
+@media (min-width: 600px) {
+  .main {
+    flex-direction: column;
+  }
+
+  .cards,
+  .operatorRow,
+  .graph {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 599px) {
+  .cards,
+  .operatorRow,
+  .driverColumn,
+  .graph {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .cards > div,
+  .operatorRow > div,
+  .driverColumn > div,
+  .graph > div {
+    width: 100%;
+  }
+}

@@ -1,0 +1,165 @@
+.header {
+  background: white;
+  padding: 7px 10px;
+  border-bottom: 3px solid #1e3a8a;
+  width: 100%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  min-height: 70px;
+  transition: all 0.3s ease-in-out;
+}
+
+.sticky {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+}
+
+.headerContainer {
+  display: flex;
+justify-content: space-between;
+  align-items: center;
+}
+
+.brandLogo img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.navMenu {
+  opacity: 0;
+  visibility: hidden;
+  position: absolute;
+  justify-content: space-between;
+  top: 60px;
+  right: 0;
+  overflow: hidden;
+  width: 150px;
+  background: white;
+  flex-direction: column;
+  text-align: center;
+  transition: opacity 0.3s ease;
+ box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border: 0.5px solid #000000;
+  display: none;
+    border-radius: 8px;
+      transition: all 0.3s ease;
+  border: .5px solid blue;
+  
+}
+
+.navMenu.active {
+  display: flex;
+  opacity: 1;
+  visibility: visible;
+}
+
+.navMenu ul {
+  list-style: none;
+  margin: 0;
+  padding: 3px 0;
+  flex-direction: column;
+  display: flex;
+}
+
+.navMenu ul li {
+  width: 100%;
+}
+
+.navMenu ul li a {
+  display: block;
+  width: 100%;
+  padding: 3px 0;
+  text-align: center;
+  text-decoration: none;
+  color: black;
+  font-weight: 500;
+  transition: color 0.3s ease;
+   font-weight:600;
+}
+
+.navMenu ul li a:hover,
+.navMenu ul li a.active {
+  color: #016de0;
+}
+
+.menuIcon {
+  display: none;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Mobile and tablets (up to 768px) */
+@media screen and (max-width: 768px) {
+  .headerContainer {
+    margin-top: 7px;
+  }
+  .header {
+  padding: 7px 20px;
+  }
+  .menuIcon {
+    display: block;
+  }
+
+  .navMenu {
+    display: none;
+      width: fit-content;
+  padding: 10px 10px;
+  }
+
+  .navMenu.active {
+    display: flex;
+  }
+}
+
+/* Laptops and desktops (769px and above) */
+@media screen and (min-width: 769px) {
+  .menuIcon {
+    display: none;
+  }
+
+  .navMenu {
+    display: flex !important;
+    position: static;
+    flex-direction: row;
+    opacity: 1 !important;
+    width: min-content;
+    visibility: visible !important;
+    background: none;
+    box-shadow: none;
+      width: fit-content;
+  padding: 10px 10px;
+    border: none;
+  }
+
+  .navMenu ul {
+    flex-direction: row;
+    gap: 20px;
+  }
+
+  .navMenu ul li a {
+    padding: 0;
+  }
+}
+
+/* Extra small devices */
+@media screen and (max-width: 480px) {
+    .headerContainer {
+    margin-top: 0;
+  }
+  .header {
+    padding: 15px 10px;
+  }
+.navMenu {
+  width: fit-content;
+  padding: 10px 10px;
+}
+  .menuIcon {
+    font-size: 28px;
+  }
+
+  .navMenu ul li a {
+    font-size: 16px;
+  }
+}
