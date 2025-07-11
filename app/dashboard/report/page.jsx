@@ -37,6 +37,7 @@ const OperatorReportPage = () => {
   const [modalType, setModalType] = useState(null);
   const [otherTyping, setOtherTyping] = useState(false);
   const [visibleTimestamps, setVisibleTimestamps] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const fileInputRef = useRef(null);
   const chatEndRef = useRef(null);
@@ -66,6 +67,7 @@ const OperatorReportPage = () => {
       }
 
       setReports(updatedReports);
+      setLoading(false); // ✅ Prevent flashing
     });
 
     return () => unsubReports();
@@ -207,6 +209,8 @@ const OperatorReportPage = () => {
     return moment(current?.toDate()).format("YYYY-MM-DD") !== moment(previous?.toDate()).format("YYYY-MM-DD");
   };
 
+  const activeReports = reports.filter((r) => r.status !== "settled");
+
   return (
     <div className={styles.container}>
       <div className={styles.reportList}>
@@ -215,27 +219,27 @@ const OperatorReportPage = () => {
             View History
           </Link>
         </div>
-        {reports.length === 0 ? (
+        {loading ? (
+          <p className={styles.noData}>Loading reports...</p>
+        ) : activeReports.length === 0 ? (
           <p className={styles.noData}>No active reports available.</p>
         ) : (
-          reports
-            .filter((r) => r.status !== "settled")
-            .map((report) => (
-              <div
-                key={report.id}
-                className={`
-                  ${styles.reportItem}
-                  ${report.hasUnreadMessages ? styles.unread : ""}
-                  ${selectedReport?.id === report.id ? styles.selectedReport : ""}
-                `}
-                onClick={() => setSelectedReport(report)}
-              >
-                <p><strong>Plate No.:</strong> {report.busPlateNumber}</p>
-                <p><strong>Type:</strong> {report.reportType}</p>
-                <p><strong>Status:</strong> {report.status}</p>
-                {report.hasUnreadMessages && <span className={styles.unreadDot}></span>}
-              </div>
-            ))
+          activeReports.map((report) => (
+            <div
+              key={report.id}
+              className={`
+                ${styles.reportItem}
+                ${report.hasUnreadMessages ? styles.unread : ""}
+                ${selectedReport?.id === report.id ? styles.selectedReport : ""}
+              `}
+              onClick={() => setSelectedReport(report)}
+            >
+              <p><strong>Plate No.:</strong> {report.busPlateNumber}</p>
+              <p><strong>Type:</strong> {report.reportType}</p>
+              <p><strong>Status:</strong> {report.status}</p>
+              {report.hasUnreadMessages && <span className={styles.unreadDot}></span>}
+            </div>
+          ))
         )}
       </div>
 

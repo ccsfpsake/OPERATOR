@@ -80,7 +80,7 @@ const LoginPage = () => {
 
       await signInWithEmailAndPassword(auth, normalizedEmail, password);
       localStorage.setItem("companyID", companyID);
-      sessionStorage.setItem("isLoggingIn", "true");
+      sessionStorage.setItem("isLoggedIn", "true");
       router.push("/dashboard");
 
     } catch (error) {

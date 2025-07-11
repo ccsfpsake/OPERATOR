@@ -19,27 +19,20 @@ const TopDrivers = lazy(() => import("./graph/driver/TopDrivers"));
 const IdleLeaderboard = lazy(() => import("./location/IdleLeaderboard/page"));
 
 const Dashboard = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isAllowed, setIsAllowed] = useState(false);
 
   useEffect(() => {
-    const isLoggingIn = sessionStorage.getItem("isLoggingIn");
-    if (isLoggingIn) {
-      setIsLoading(true);
-      const timer = setTimeout(() => {
-        sessionStorage.removeItem("isLoggingIn");
-        setIsLoading(false);
-      }, 1000); // Simulate splash loading
-      return () => clearTimeout(timer);
+    const isLoggedIn = sessionStorage.getItem("isLoggedIn");
+
+    if (!isLoggedIn) {
+      window.location.href = "/";
+    } else {
+      setIsAllowed(true);
     }
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className={styles.spinnerContainer}>
-        <p>Loading dashboard...</p>
-      </div>
-    );
-  }
+  // 🔒 Prevent UI flash if not yet verified
+  if (!isAllowed) return null;
 
   return (
     <div className={styles.container}>

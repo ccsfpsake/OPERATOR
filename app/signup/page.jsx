@@ -453,7 +453,7 @@ const SignupPage = () => {
         </div>
       </div>
     )}
-      <ToastContainer theme="colored" position="top-right" autoClose={3000} />
+      <ToastContainer theme="colored" position="top-right" autoClose={2000} />
     </div>
   );
 };
