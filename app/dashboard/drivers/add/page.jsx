@@ -196,7 +196,7 @@ const AddDriverPage = () => {
         setTimeout(() => {
           setLoading(false);
           router.push("/dashboard/drivers");
-        }, 3000);
+        }, 2000);
       };
 
       if (croppedImage) {

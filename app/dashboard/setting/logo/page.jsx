@@ -28,7 +28,7 @@ const SystemLogoPage = () => {
         setLogos({ logow: logowURL, logo: logoURL });
       } catch (error) {
         console.error("Error fetching logos:", error);
-        toast.error("Error fetching logos.", { autoClose: 3000 });
+        toast.error("Error fetching logos.", { autoClose: 2000 });
       }
     };
 
@@ -46,7 +46,7 @@ const SystemLogoPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedFile) {
-      toast.warning("Please select a file.", { autoClose: 3000 });
+      toast.warning("Please select a file.", { autoClose: 2000 });
       return;
     }
 
@@ -72,16 +72,16 @@ const SystemLogoPage = () => {
       setSelectedFile(null);
       setPreview(null);
 
-      toast.success("Logo updated successfully!", { autoClose: 3000 });
+      toast.success("Logo updated successfully!", { autoClose: 2000 });
     } catch (error) {
       console.error("Error updating logo:", error);
-      toast.error("Error updating logo.", { autoClose: 3000 });
+      toast.error("Error updating logo.", { autoClose: 2000 });
     }
   };
 
   return (
     <div className={styles.systemLogoContainer}>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={2000} />
       <h2>System Logo Settings</h2>
 
       <div className={styles.logoPreview}>

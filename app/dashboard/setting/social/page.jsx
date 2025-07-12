@@ -29,11 +29,11 @@ const SocialMediaPage = () => {
           setOriginalData(docSnap.data());
         } else {
           toast.dismiss(); 
-          toast.error("No data found.", { autoClose: 3000 });
+          toast.error("No data found.", { autoClose: 2000 });
         }
       } catch (error) {
         toast.dismiss();
-        toast.error("Error fetching data.", { autoClose: 3000 });
+        toast.error("Error fetching data.", { autoClose: 2000 });
         console.error("Error fetching data:", error);
       }
     };
@@ -58,7 +58,7 @@ const SocialMediaPage = () => {
 
     if (!hasChanges) {
       toast.dismiss();
-      toast.warning("No changes detected.", { autoClose: 3000 });
+      toast.warning("No changes detected.", { autoClose: 2000 });
       return;
     }
 
@@ -67,18 +67,18 @@ const SocialMediaPage = () => {
       await setDoc(docRef, socialMediaData);
 
       toast.dismiss();
-      toast.success("Social Media Accounts updated successfully.", { autoClose: 3000 });
+      toast.success("Social Media Accounts updated successfully.", { autoClose: 2000 });
       setOriginalData(socialMediaData);
     } catch (error) {
       toast.dismiss();
-      toast.error("Error updating data.", { autoClose: 3000 });
+      toast.error("Error updating data.", { autoClose: 2000 });
       console.error("Error updating data:", error);
     }
   };
 
   return (
     <div className={styles.socialMediaContainer}>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={2000} />
       <form onSubmit={handleSubmit} className={styles.form}>
         {Object.keys(socialMediaData).map((field) => (
           <div className={styles.formGroup} key={field}>

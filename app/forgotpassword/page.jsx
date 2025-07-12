@@ -27,7 +27,7 @@ const ForgotPasswordPage = () => {
 
         toast.error("No Operator account found with this email.", {
           position: "top-right",
-          autoClose: 3000,
+          autoClose: 2000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -41,7 +41,7 @@ const ForgotPasswordPage = () => {
       await sendPasswordResetEmail(auth, email);
       toast.success("Password reset email sent successfully!", {
         position: "top-right",
-        autoClose: 3000,
+        autoClose: 2000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -53,7 +53,7 @@ const ForgotPasswordPage = () => {
       if (error.code === "auth/invalid-email") {
         toast.error("Invalid email format. Please check and try again.", {
           position: "top-right",
-          autoClose: 3000,
+          autoClose: 2000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,
@@ -63,7 +63,7 @@ const ForgotPasswordPage = () => {
       } else {
         toast.error("Failed to send password reset email. Please try again later.", {
           position: "top-right",
-          autoClose: 3000,
+          autoClose: 2000,
           hideProgressBar: false,
           closeOnClick: true,
           pauseOnHover: true,

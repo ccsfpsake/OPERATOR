@@ -29,10 +29,10 @@ const AboutUsEditPage = () => {
           setAboutUsData(data);
           setOriginalData(data);
         } else {
-          toast.error("No data found.", { autoClose: 3000 });
+          toast.error("No data found.", { autoClose: 2000 });
         }
       } catch (error) {
-        toast.error("Error fetching data.", { autoClose: 3000 });
+        toast.error("Error fetching data.", { autoClose: 2000 });
         console.error("Error fetching data:", error);
       }
     };
@@ -56,12 +56,12 @@ const AboutUsEditPage = () => {
     );
 
     if (!hasChanges && !logoFile) {
-      toast.warning("No changes detected.", { autoClose: 3000 });
+      toast.warning("No changes detected.", { autoClose: 2000 });
       return;
     }
 
     if (!aboutUsData.AboutUs.trim() || !aboutUsData.Mission.trim() || !aboutUsData.Vision.trim()) {
-      toast.error("All fields are required.", { autoClose: 3000 });
+      toast.error("All fields are required.", { autoClose: 2000 });
       return;
     }
 
@@ -77,16 +77,16 @@ const AboutUsEditPage = () => {
 
       setOriginalData(aboutUsData);
       setLogoFile(null);
-      toast.success("About Us updated successfully.", { autoClose: 3000 });
+      toast.success("About Us updated successfully.", { autoClose: 2000 });
     } catch (error) {
-      toast.error("Error updating data.", { autoClose: 3000 });
+      toast.error("Error updating data.", { autoClose: 2000 });
       console.error("Error updating data:", error);
     }
   };
 
   return (
     <div className={styles.aboutUsEditContainer}>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={2000} />
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.formGroup}>
           <label htmlFor="AboutUs" className={styles.label}>About Us</label>

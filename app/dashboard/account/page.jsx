@@ -157,7 +157,7 @@ const Profile = () => {
 
   return (
     <div className={styles.container}>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={2000} />
       <div className={styles.card}>
         <h1 className={styles.title}>Account Settings</h1>
 

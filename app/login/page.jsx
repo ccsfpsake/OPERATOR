@@ -41,7 +41,7 @@ const LoginPage = () => {
       if (querySnapshot.empty) {
         toast.error("No operator found with this email.", {
           position: "top-right",
-          autoClose: 3000,
+          autoClose: 2000,
           theme: "colored",
         });
         setLoading(false);
@@ -71,7 +71,7 @@ const LoginPage = () => {
       if (!companyID) {
         toast.error("Company ID missing for this operator.", {
           position: "top-right",
-          autoClose: 3000,
+          autoClose: 2000,
           theme: "colored",
         });
         setLoading(false);
@@ -85,7 +85,7 @@ const LoginPage = () => {
 
     } catch (error) {
       const code = error.code;
-      let message = "An error occurred. Please try again.";
+      let message = "Password is incorrect. Please try again.";
 
       if (code === "auth/user-not-found" || code === "auth/invalid-email") {
         message = "No operator found or email is invalid.";

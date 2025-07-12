@@ -69,7 +69,7 @@ const TermsOfUsePage = () => {
 
   return (
     <div className={styles.container}>
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={2000} />
       {error && <p className={styles.error}>{error}</p>}
       <label>Date Updated:</label>
       <input
