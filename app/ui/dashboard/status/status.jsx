@@ -21,7 +21,7 @@ const Status = () => {
   const [statusFilter, setStatusFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
-  const itemsPerPage = 8;
+  const itemsPerPage = 5;
 
   const companyID =
     typeof window !== "undefined" ? localStorage.getItem("companyID") : null;
