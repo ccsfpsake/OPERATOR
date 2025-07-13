@@ -51,26 +51,74 @@
 //     if (!companyID) return;
 
 //     const q = query(collection(db, "busReports"), where("companyID", "==", companyID));
+//     const messageUnsubs = {};
+
 //     const unsubReports = onSnapshot(q, async (snapshot) => {
 //       const updatedReports = [];
 
 //       for (const docSnap of snapshot.docs) {
-//         const reportData = { id: docSnap.id, ...docSnap.data(), hasUnreadMessages: false };
-//         const messagesRef = collection(db, "busReports", docSnap.id, "messages");
-//         const msgSnap = await getDocs(messagesRef);
+//         const reportID = docSnap.id;
+//         const reportData = { id: reportID, ...docSnap.data(), hasUnreadMessages: false };
 
-//         const unreadQuery = query(messagesRef, where("senderRole", "==", "admin"), where("seen", "==", false));
-//         const unreadSnap = await getDocs(unreadQuery);
-//         const shouldShowDot = (!msgSnap.empty && !reportData.operatorSeen) || !unreadSnap.empty;
+//         updatedReports.push(reportData);
 
-//         updatedReports.push({ ...reportData, hasUnreadMessages: shouldShowDot });
+//         const messagesRef = collection(db, "busReports", reportID, "messages");
+
+//         if (!messageUnsubs[reportID]) {
+//           messageUnsubs[reportID] = onSnapshot(messagesRef, (msgSnap) => {
+//             let hasUnread = false;
+//             let latestTimestamp = null;
+
+//             msgSnap.forEach((msgDoc) => {
+//               const msg = msgDoc.data();
+//               if (msg.senderRole === "admin" && msg.seen === false) {
+//                 hasUnread = true;
+//               }
+//               if (!latestTimestamp || msg.createdAt?.toDate() > latestTimestamp) {
+//                 latestTimestamp = msg.createdAt?.toDate();
+//               }
+//             });
+
+
+//             setReports((prev) => {
+//               const updated = prev.map((r) =>
+//                 r.id === reportID
+//                   ? {
+//                       ...r,
+//                       hasUnreadMessages: !r.operatorSeen || hasUnread,
+//                       latestMessageAt: latestTimestamp || r.createdAt?.toDate(),
+//                     }
+//                   : r
+//               );
+
+//               return updated.sort((a, b) => {
+//                 const timeA = a.latestMessageAt || new Date(0);
+//                 const timeB = b.latestMessageAt || new Date(0);
+//                 return timeB - timeA;
+//               });
+//             });
+//           });
+
+//         }
 //       }
 
-//       setReports(updatedReports);
-//       setLoading(false); // ✅ Prevent flashing
+//       const sorted = updatedReports.sort((a, b) => {
+//         if (a.hasUnreadMessages && !b.hasUnreadMessages) return -1;
+//         if (!a.hasUnreadMessages && b.hasUnreadMessages) return 1;
+
+//         const dateA = a.createdAt?.toDate?.() || new Date(0);
+//         const dateB = b.createdAt?.toDate?.() || new Date(0);
+//         return dateB - dateA;
+//       });
+
+//       setReports(sorted);
+//       setLoading(false);
 //     });
 
-//     return () => unsubReports();
+//     return () => {
+//       unsubReports();
+//       Object.values(messageUnsubs).forEach((unsub) => unsub());
+//     };
 //   }, [companyID]);
 
 //   useEffect(() => {
@@ -112,6 +160,18 @@
 //   useEffect(() => {
 //     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
 //   }, [messages]);
+
+
+//   useEffect(() => {
+//     if (!selectedReport) return;
+
+//     const stillExists = reports.find((r) => r.id === selectedReport.id);
+
+//     if (!stillExists || stillExists.status === "settled") {
+//       setSelectedReport(null);
+//     }
+//   }, [reports, selectedReport]);
+
 
 //   useEffect(() => {
 //     if (!selectedReport) return;
@@ -245,30 +305,31 @@
 
 //       {selectedReport ? (
 //         <div className={styles.chatSection}>
-//           <div className={styles.reportTop}>
-//             <div className={styles.reportInfoContainer}>
-//               <div className={styles.reportText}>
-//                 <h3>Plate No: {selectedReport.busPlateNumber}</h3>
-//                 <p><strong>Type:</strong> {selectedReport.reportType}</p>
-//                 <p><strong>Description:</strong> {selectedReport.description}</p>
-//               </div>
-//               {selectedReport.imageUrl && (
-//                 <div className={styles.reportImage}>
-//                   <Image
-//                     src={selectedReport.imageUrl}
-//                     alt="Report"
-//                     className={styles.fullMedia}
-//                     width={200}
-//                     height={120}
-//                     onClick={() => {
-//                       setModalSrc(selectedReport.imageUrl);
-//                       setModalType("image");
-//                     }}
-//                   />
-//                 </div>
-//               )}
-//             </div>
+//       <div className={styles.reportTop}>
+//         <div className={styles.reportInfoContainer}>
+//           <div className={styles.reportText}>
+//             <h3>Plate No: {selectedReport.busPlateNumber}</h3>
+//             <p><strong>Type:</strong> {selectedReport.reportType}</p>
+//             <p><strong>Description:</strong> {selectedReport.description}</p>
+//             <p><strong>Date:</strong> {formatDate(selectedReport.createdAt)}</p>
 //           </div>
+//           {selectedReport.imageUrl && (
+//             <div className={styles.reportImage}>
+//               <Image
+//                 src={selectedReport.imageUrl}
+//                 alt="Report"
+//                 className={styles.fullMedia}
+//                 width={200}
+//                 height={120}
+//                 onClick={() => {
+//                   setModalSrc(selectedReport.imageUrl);
+//                   setModalType("image");
+//                 }}
+//               />
+//             </div>
+//           )}
+//         </div>
+//       </div>
 
 //           <div className={styles.chatBox}>
 //             {messages.length === 0 ? (
@@ -285,6 +346,7 @@
 //                     {visibleTimestamps.includes(msg.id) && (
 //                       <div className={styles.timestampTopCenter}>{formatTime(msg.createdAt)}</div>
 //                     )}
+
 //                     <div
 //                       className={`${styles.messageRow} ${isOperator ? styles.right : styles.left}`}
 //                       onClick={() => toggleTimestamp(msg.id)}
@@ -319,8 +381,17 @@
 //                         )}
 //                       </div>
 //                     </div>
+
+//                     {isOperator && i === messages.length - 1 && (
+//                       <div className={styles.statusBottom}>
+//                         {msg.status === "sending" && <span>Sending...</span>}
+//                         {msg.status === "delivered" && !msg.seen && <span>Delivered</span>}
+//                         {msg.seen && <span>Seen</span>}
+//                       </div>
+//                     )}
 //                   </div>
 //                 );
+
 //               })
 //             )}
 //             {otherTyping && <div className={styles.typingIndicator}>typing...</div>}
@@ -417,7 +488,6 @@
 // export default OperatorReportPage;
 
 
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -499,7 +569,6 @@ const OperatorReportPage = () => {
               }
             });
 
-
             setReports((prev) => {
               const updated = prev.map((r) =>
                 r.id === reportID
@@ -518,7 +587,6 @@ const OperatorReportPage = () => {
               });
             });
           });
-
         }
       }
 
@@ -533,13 +601,21 @@ const OperatorReportPage = () => {
 
       setReports(sorted);
       setLoading(false);
+
+      // ✅ Automatically close chat if the selected report is settled
+      if (selectedReport) {
+        const updatedSelected = sorted.find((r) => r.id === selectedReport.id);
+        if (!updatedSelected || updatedSelected.status === "settled") {
+          setSelectedReport(null);
+        }
+      }
     });
 
     return () => {
       unsubReports();
       Object.values(messageUnsubs).forEach((unsub) => unsub());
     };
-  }, [companyID]);
+  }, [companyID, selectedReport]);
 
   useEffect(() => {
     if (!selectedReport) return;
@@ -580,18 +656,6 @@ const OperatorReportPage = () => {
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
-
-
-  useEffect(() => {
-    if (!selectedReport) return;
-
-    const stillExists = reports.find((r) => r.id === selectedReport.id);
-
-    if (!stillExists || stillExists.status === "settled") {
-      setSelectedReport(null);
-    }
-  }, [reports, selectedReport]);
-
 
   useEffect(() => {
     if (!selectedReport) return;
@@ -906,3 +970,4 @@ const OperatorReportPage = () => {
 };
 
 export default OperatorReportPage;
+
