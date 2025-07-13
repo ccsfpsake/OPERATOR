@@ -76,33 +76,34 @@ const OperatorReportHistoryPage = () => {
     return () => unsubscribe();
   }, [companyID]);
 
-  useEffect(() => {
-    const filtered = reports.filter((report) => {
-      const date = report.createdAt?.toDate();
-      return (
-        date &&
-        moment(date).month() === parseInt(selectedMonth) &&
-        moment(date).year() === parseInt(selectedYear)
-      );
-    });
+useEffect(() => {
+  const filtered = reports.filter((report) => {
+    const date = report.createdAt?.toDate();
+    return (
+      date &&
+      moment(date).month() === parseInt(selectedMonth) &&
+      moment(date).year() === parseInt(selectedYear)
+    );
+  });
 
-    const searched = filtered.filter((report) => {
-      const search = companySearch.toLowerCase();
-      return (
-        report.busPlateNumber?.toLowerCase().includes(search) ||
-        report.reportType?.toLowerCase().includes(search) ||
-        report.description?.toLowerCase().includes(search)
-      );
-    });
+  const searched = filtered.filter((report) => {
+    const search = companySearch.toLowerCase();
+    return (
+      report.busPlateNumber?.toLowerCase().includes(search) ||
+      report.reportType?.toLowerCase().includes(search) ||
+      report.description?.toLowerCase().includes(search)
+    );
+  });
 
-    searched.sort((a, b) => {
-      const dateA = a.createdAt?.toDate?.() || 0;
-      const dateB = b.createdAt?.toDate?.() || 0;
-      return dateB - dateA;
-    });
+  // ✅ Sort again here
+  searched.sort((a, b) => {
+    const dateA = a.createdAt?.toDate?.() || 0;
+    const dateB = b.createdAt?.toDate?.() || 0;
+    return dateB - dateA;
+  });
 
-    setFilteredReports(searched);
-  }, [reports, selectedMonth, selectedYear, companySearch]);
+  setFilteredReports(searched);
+}, [reports, selectedMonth, selectedYear, companySearch]);
 
 
   useEffect(() => {
