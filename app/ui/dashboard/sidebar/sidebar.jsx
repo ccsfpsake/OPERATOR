@@ -22,7 +22,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { db } from "../../../lib/firebaseConfig";
-import Image from 'next/image';
+import Image from "next/image";
 
 const menuItems = [
   {
@@ -82,7 +82,6 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const [hasUnreadReports, setHasUnreadReports] = useState(false);
   const [hasIdleBuses, setHasIdleBuses] = useState(false);
 
-  // Location checker for City College
   const isAtCityCollege = (location) => {
     const targetLat = 15.06137;
     const targetLng = 120.643928;
@@ -122,43 +121,39 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
       where("companyID", "==", companyID)
     );
 
-    const unsubReports = onSnapshot(reportQuery, (snapshot) => {
-      const unsubMessageListeners = [];
+    let unsubMessageListeners = [];
 
-      let foundUnread = false;
+    const unsubReports = onSnapshot(reportQuery, (snapshot) => {
+      unsubMessageListeners.forEach((unsub) => unsub()); // Clean previous
+      unsubMessageListeners = [];
+
+      let reportsStatus = {};
 
       snapshot.docs.forEach((docSnap) => {
-        const report = docSnap.data();
         const reportID = docSnap.id;
+        const reportData = docSnap.data();
+
         const messagesRef = collection(db, "busReports", reportID, "messages");
 
         const unsubMsg = onSnapshot(messagesRef, (msgSnap) => {
           const messages = msgSnap.docs.map((d) => d.data());
           const hasMessages = messages.length > 0;
-
           const hasUnreadAdmin = messages.some(
             (msg) => msg.senderRole === "admin" && msg.seen === false
           );
 
-          const isNewUnread = !hasMessages && !report.operatorSeen;
+          const isNewUnread = !hasMessages && !reportData.operatorSeen;
 
-          if (hasUnreadAdmin || isNewUnread) {
-            foundUnread = true;
-            setHasUnreadReports(true);
-          } else {
-            setHasUnreadReports((prev) => (prev ? foundUnread : false));
-          }
+          reportsStatus[reportID] = hasUnreadAdmin || isNewUnread;
+
+          const hasAnyUnread = Object.values(reportsStatus).some((v) => v === true);
+          setHasUnreadReports(hasAnyUnread);
         });
 
         unsubMessageListeners.push(unsubMsg);
       });
-
-      return () => {
-        unsubMessageListeners.forEach((u) => u());
-      };
     });
 
-    // Idle Bus Notifications (with City College logic)
     const unsubIdle = onSnapshot(collection(db, "BusLocation"), async (snapshot) => {
       const driversSnapshot = await getDocs(collection(db, "Drivers"));
       const driversMap = {};
@@ -193,6 +188,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     return () => {
       unsubReports();
       unsubIdle();
+      unsubMessageListeners.forEach((u) => u());
     };
   }, []);
 
