@@ -56,14 +56,22 @@ const OperatorReportHistoryPage = () => {
       where("status", "==", "settled")
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const all = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setReports(all);
-      setLoading(false);
+  const unsubscribe = onSnapshot(q, (snapshot) => {
+    const all = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    // Sort by createdAt descending
+    all.sort((a, b) => {
+      const dateA = a.createdAt?.toDate?.() || 0;
+      const dateB = b.createdAt?.toDate?.() || 0;
+      return dateB - dateA;
     });
+
+    setReports(all);
+    setLoading(false);
+  });
 
     return () => unsubscribe();
   }, [companyID]);
@@ -87,8 +95,15 @@ const OperatorReportHistoryPage = () => {
       );
     });
 
+    searched.sort((a, b) => {
+      const dateA = a.createdAt?.toDate?.() || 0;
+      const dateB = b.createdAt?.toDate?.() || 0;
+      return dateB - dateA;
+    });
+
     setFilteredReports(searched);
   }, [reports, selectedMonth, selectedYear, companySearch]);
+
 
   useEffect(() => {
     if (!selectedReport) return;
@@ -210,6 +225,9 @@ const OperatorReportHistoryPage = () => {
                 </p>
                 <p>
                   <strong>Description:</strong> {selectedReport.description}
+                </p>
+                <p>
+                  <strong>Date:</strong> {formatDate(selectedReport.createdAt)}
                 </p>
               </div>
               {selectedReport.imageUrl && (
