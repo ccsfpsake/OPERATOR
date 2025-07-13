@@ -12,6 +12,9 @@ import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { useEffect, useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import Pagination from "../../../app/ui/dashboard/pagination/pagination";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 const DriversPage = () => {
   const [drivers, setDrivers] = useState([]);
@@ -72,22 +75,23 @@ const DriversPage = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleDelete = async () => {
-    try {
-      if (selectedDriverId) {
-        await deleteDoc(doc(db, "Drivers", selectedDriverId));
-        setDrivers((prevDrivers) =>
-          prevDrivers.filter((driver) => driver.id !== selectedDriverId)
-        );
-        setShowModal(false);
-        setSelectedDriverId(null);
-        alert("Driver deleted successfully.");
-      }
-    } catch (error) {
-      console.error("Error deleting driver:", error);
-      alert("Failed to delete driver.");
+const handleDelete = async () => {
+  try {
+    if (selectedDriverId) {
+      await deleteDoc(doc(db, "Drivers", selectedDriverId));
+      setDrivers((prevDrivers) =>
+        prevDrivers.filter((driver) => driver.id !== selectedDriverId)
+      );
+      setShowModal(false);
+      setSelectedDriverId(null);
+      toast.success("Driver deleted successfully."); 
     }
-  };
+  } catch (error) {
+    console.error("Error deleting driver:", error);
+    toast.error("Failed to delete driver."); 
+  }
+};
+
 
   const confirmDelete = (id) => {
     setSelectedDriverId(id);
@@ -246,7 +250,21 @@ const DriversPage = () => {
         onPageChange={setCurrentPage}
       />
 
+<ToastContainer
+  position="top-right"
+  autoClose={2000}
+  hideProgressBar={false}
+  newestOnTop={false}
+  closeOnClick
+  rtl={false}
+  pauseOnFocusLoss
+  draggable
+  pauseOnHover
+  theme="colored"
+/>
+
     </div>
+    
   );
 };
 
