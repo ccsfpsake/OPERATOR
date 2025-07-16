@@ -44,8 +44,8 @@ const isAtCityCollege = (bus) => {
 };
 
 const getIdleTime = (bus) => {
-  if (bus.timestamp?.toDate) {
-    const lastUpdate = bus.timestamp.toDate();
+  if (bus.lastUpdated?.toDate) {
+    const lastUpdate = bus.lastUpdated.toDate();
     const now = new Date();
     const diffMs = now - lastUpdate;
     const idleMinutes = Math.floor(diffMs / 60000);
@@ -193,7 +193,7 @@ export default function BusLocationPage() {
 
   const idleBuses = useMemo(() => {
     return filteredBuses.filter((bus) => {
-      const lastUpdate = bus.timestamp?.toDate?.();
+      const lastUpdate = bus.lastUpdated?.toDate?.();
       if (!lastUpdate) return false;
       const idleMinutes = Math.floor((Date.now() - lastUpdate) / 60000);
       if (isAtCityCollege(bus)) return idleMinutes >= 10;

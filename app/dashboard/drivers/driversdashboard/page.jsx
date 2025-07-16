@@ -163,8 +163,8 @@ export default function BusLocationPage() {
   }, [map]);
 
   const getIdleTime = (bus) => {
-    if (bus.timestamp?.toDate) {
-      const lastUpdate = bus.timestamp.toDate();
+    if (bus.lastUpdated?.toDate) {
+      const lastUpdate = bus.lastUpdated.toDate();
       const now = new Date();
       const diffMs = now - lastUpdate;
       if (diffMs > 0) {
