@@ -38,15 +38,17 @@ const getFormattedDateLabel = (period, createdAt) => {
     case "day":
       return date.format("MMMM D, YYYY");
 
-    case "week":
+    case "week": {
       const startOfWeek = date.startOf("week");
       const endOfWeek = date.endOf("week");
       return `${startOfWeek.format("MMMM D")} – ${endOfWeek.format("D, YYYY")}`;
+    }
 
-    case "month":
+    case "month": {
       const startOfMonth = date.startOf("month");
       const endOfMonth = date.endOf("month");
       return `${startOfMonth.format("MMMM D")} – ${endOfMonth.format("D, YYYY")}`;
+    }
 
     case "year":
       return date.format("YYYY");
@@ -111,7 +113,7 @@ const TopDriversGrouped = () => {
                   name,
                   image,
                   periodKey: key,
-                  createdAt, // ✅ store the actual date
+                  createdAt,
                   totalFare: 0,
                 };
               }
@@ -124,9 +126,9 @@ const TopDriversGrouped = () => {
         const result = {};
         for (const period of periods) {
           const grouped = Object.values(fareGroups[period]);
-        const sorted = grouped
-          .sort((a, b) => b.totalFare - a.totalFare)
-          .slice(0, 3); 
+          const sorted = grouped
+            .sort((a, b) => b.totalFare - a.totalFare)
+            .slice(0, 3);
 
           result[period] = sorted;
         }
