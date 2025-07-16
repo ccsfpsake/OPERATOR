@@ -5,8 +5,8 @@ import { db } from "../../../lib/firebaseConfig";
 import leaderboardStyles from "./idleLeaderboard.module.css";
 
 const getIdleMinutes = (bus) => {
-  if (bus.timestamp && bus.timestamp.toDate) {
-    const lastUpdate = bus.timestamp.toDate();
+  if (bus.lastUpdated && bus.lastUpdated.toDate) {
+    const lastUpdate = bus.lastUpdated.toDate();
     const now = new Date();
     const diffMs = now - lastUpdate;
     if (diffMs > 0) {
@@ -93,7 +93,7 @@ export default function IdleDriversLeaderboard() {
               id: doc.id,
               driverID: data.driverID || "N/A",
               plateNumber,
-              timestamp: data.timestamp,
+              lastUpdated: data.lastUpdated,
               companyID: driverInfo.companyID,
               driverStatus: driverInfo.status,
             };
