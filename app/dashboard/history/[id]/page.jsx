@@ -65,8 +65,8 @@ const DriverHistoryPage = () => {
           grouped[dateKey].totalFare += Number(trip.fare) || 0;
 
           const routeLabel =
-            trip.start && trip.destination
-              ? `${trip.start} - ${trip.destination}`
+            trip.route
+              ? `${trip.route}`
               : trip.route ?? "Unknown Route";
           grouped[dateKey].routes.add(routeLabel);
         });
@@ -189,8 +189,8 @@ const DriverHistoryPage = () => {
                             }) ?? "N/A"}
                           </td>
                           <td style={{ fontStyle: "italic" }}>
-                            {trip.start && trip.destination
-                              ? `${trip.start} - ${trip.destination}`
+                            {trip.origin && trip.destination
+                              ? `${trip.origin} - ${trip.destination}`
                               : trip.route ?? ""}
                           </td>
                           <td style={{ textAlign: "right" }}>
