@@ -16,6 +16,13 @@ const DriverHistoryPage = () => {
   const [expandedDates, setExpandedDates] = useState({});
   const [loading, setLoading] = useState(true);
 
+  // 🔹 Format total duration to "X hr Y mins"
+  const formatDuration = (totalMinutes) => {
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+    return `${hours > 0 ? `${hours} hr${hours > 1 ? "s" : ""} ` : ""}${minutes} min${minutes !== 1 ? "s" : ""}`;
+  };
+
   useEffect(() => {
     const companyID = localStorage.getItem("companyID");
     if (!driverID || !companyID) return;
@@ -64,10 +71,9 @@ const DriverHistoryPage = () => {
           grouped[dateKey].totalPassengers += Number(trip.TotalPassengers) || 0;
           grouped[dateKey].totalFare += Number(trip.fare) || 0;
 
-          const routeLabel =
-            trip.route
-              ? `${trip.route}`
-              : trip.route ?? "Unknown Route";
+          const routeLabel = trip.route
+            ? `${trip.route}`
+            : trip.route ?? "Unknown Route";
           grouped[dateKey].routes.add(routeLabel);
         });
 
@@ -78,7 +84,7 @@ const DriverHistoryPage = () => {
             trips: day.trips.sort((a, b) => {
               const timeA = a.createdAt?.toDate?.().getTime() || 0;
               const timeB = b.createdAt?.toDate?.().getTime() || 0;
-              return timeA - timeB; 
+              return timeA - timeB;
             }),
           }))
           .sort((a, b) => b.timestamp - a.timestamp);
@@ -102,13 +108,36 @@ const DriverHistoryPage = () => {
 
   const filteredDailyTrips = dailyTrips.filter((day) => {
     const searchLower = searchTerm.toLowerCase();
-    return (
+
+    const matchesDay = 
       day.displayDate.toLowerCase().includes(searchLower) ||
       day.totalPassengers.toString().includes(searchLower) ||
       day.totalFare.toString().includes(searchLower) ||
-      day.routes.some((route) => route?.toLowerCase().includes(searchLower))
-    );
+      day.routes.some((route) => route?.toLowerCase().includes(searchLower));
+
+    const matchesTrip = day.trips.some((trip) => {
+      const duration = `${Math.round(Number(trip.tripDuration))} min`;
+      const fare = `₱${Number(trip.fare || 0).toLocaleString()}`;
+      const originDest = `${trip.origin || ""} ${trip.destination || ""}`.toLowerCase();
+      const route = (trip.route || "").toLowerCase();
+
+      return (
+        (trip.createdAt?.toDate().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }) || "").toLowerCase().includes(searchLower) ||
+        originDest.includes(searchLower) ||
+        route.includes(searchLower) ||
+        (trip.busNum || "").toLowerCase().includes(searchLower) ||
+        duration.toLowerCase().includes(searchLower) ||
+        (trip.TotalPassengers || "").toString().includes(searchLower) ||
+        fare.toLowerCase().includes(searchLower)
+      );
+    });
+
+    return matchesDay || matchesTrip;
   });
+
 
   return (
     <div className={styles.container}>
@@ -133,6 +162,8 @@ const DriverHistoryPage = () => {
             <tr>
               <th>Date</th>
               <th>Route</th>
+              <th>Plate No.</th>
+              <th>Trip Duration</th>
               <th>Total Passengers</th>
               <th>Total Fare</th>
             </tr>
@@ -140,13 +171,13 @@ const DriverHistoryPage = () => {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className={styles.noData}>
+                <td colSpan={6} className={styles.noData}>
                   Loading...
                 </td>
               </tr>
             ) : filteredDailyTrips.length === 0 ? (
               <tr>
-                <td colSpan={7} className={styles.noData}>
+                <td colSpan={6} className={styles.noData}>
                   No trip history found.
                 </td>
               </tr>
@@ -173,6 +204,15 @@ const DriverHistoryPage = () => {
                       <td style={{ textAlign: "left", paddingLeft: "25px", fontStyle: "italic" }}>
                         {day.routes.join(", ")}
                       </td>
+                      <td></td>
+                      <td style={{ textAlign: "center" }}>
+                        {formatDuration(
+                          day.trips.reduce(
+                            (sum, trip) => sum + (Number(trip.tripDuration) || 0),
+                            0
+                          )
+                        )}
+                      </td>
                       <td style={{ textAlign: "right" }}>{day.totalPassengers}</td>
                       <td style={{ textAlign: "right" }}>
                         ₱{day.totalFare.toLocaleString()}
@@ -192,6 +232,14 @@ const DriverHistoryPage = () => {
                             {trip.origin && trip.destination
                               ? `${trip.origin} - ${trip.destination}`
                               : trip.route ?? ""}
+                          </td>
+                          <td style={{ textAlign: "center" }}>
+                            {trip.busNum ?? "N/A"}
+                          </td>
+                          <td style={{ textAlign: "right" }}>
+                            {trip.tripDuration
+                              ? `${Math.round(Number(trip.tripDuration))} mins`
+                              : "N/A"}
                           </td>
                           <td style={{ textAlign: "right" }}>
                             {trip.TotalPassengers ?? "N/A"}

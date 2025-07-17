@@ -197,7 +197,7 @@ export default function BusLocationPage() {
       if (!lastUpdate) return false;
       const idleMinutes = Math.floor((Date.now() - lastUpdate) / 60000);
       if (isAtCityCollege(bus)) return idleMinutes >= 10;
-      return idleMinutes >= 5;
+      return idleMinutes >= 3;
     });
   }, [filteredBuses]);
 

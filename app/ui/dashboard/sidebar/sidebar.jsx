@@ -168,7 +168,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
         const driver = driversMap[data.driverID];
         const isSameCompany = driver?.companyID === companyID;
         const isActive = driver?.status === "active";
-        const lastUpdate = data.timestamp?.toDate?.();
+        const lastUpdate = data.lastUpdated?.toDate?.();
         const location = data.currentLocation;
 
         if (!lastUpdate || !isSameCompany || !isActive) return false;
@@ -179,7 +179,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
           return diffMin >= 10;
         }
 
-        return diffMin >= 5;
+        return diffMin >= 3;
       });
 
       setHasIdleBuses(idleBuses.length > 0);

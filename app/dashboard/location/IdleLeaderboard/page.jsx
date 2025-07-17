@@ -26,9 +26,9 @@ const formatIdleTime = (minutes) => {
 };
 
 const getIdleTextClass = (idleMinutes) => {
-  if (idleMinutes > 30) return leaderboardStyles.textRed;
-  if (idleMinutes > 10) return leaderboardStyles.textOrange;
-  if (idleMinutes >= 5) return leaderboardStyles.textYellow;
+  if (idleMinutes > 10) return leaderboardStyles.textRed;
+  if (idleMinutes > 5) return leaderboardStyles.textOrange;
+  if (idleMinutes >= 3) return leaderboardStyles.textYellow;
   return "";
 };
 
@@ -108,18 +108,18 @@ export default function IdleDriversLeaderboard() {
             ...bus,
             idleMinutes: getIdleMinutes(bus),
           }))
-          .filter((bus) => bus.idleMinutes >= 5);
+          .filter((bus) => bus.idleMinutes >= 3);
 
-        if (selectedFilter === "5-10") {
+        if (selectedFilter === "3-5") {
           withIdleTime = withIdleTime.filter(
-            (bus) => bus.idleMinutes >= 5 && bus.idleMinutes <= 10
+            (bus) => bus.idleMinutes >= 3 && bus.idleMinutes <= 5
           );
-        } else if (selectedFilter === "11-30") {
+        } else if (selectedFilter === "6-10") {
           withIdleTime = withIdleTime.filter(
-            (bus) => bus.idleMinutes > 10 && bus.idleMinutes <= 30
+            (bus) => bus.idleMinutes >= 6 && bus.idleMinutes <= 10
           );
-        } else if (selectedFilter === "31+") {
-          withIdleTime = withIdleTime.filter((bus) => bus.idleMinutes > 30);
+        } else if (selectedFilter === "11+") {
+          withIdleTime = withIdleTime.filter((bus) => bus.idleMinutes > 10);
         }
 
         withIdleTime = withIdleTime.sort(
@@ -149,9 +149,9 @@ export default function IdleDriversLeaderboard() {
           className={leaderboardStyles.selectFilter}
         >
           <option value="all">All</option>
-          <option value="5-10">5–10 mins</option>
-          <option value="11-30">11–30 mins</option>
-          <option value="31+">31+ mins</option>
+          <option value="3-5">3–5 mins</option>
+          <option value="6-10">6–10 mins</option>
+          <option value="11+">11+ mins</option>
         </select>
       </div>
 
@@ -168,19 +168,19 @@ export default function IdleDriversLeaderboard() {
               <span
                 className={`${leaderboardStyles.legendBox} ${leaderboardStyles.legendRed}`}
               />{" "}
-              31+ mins
+              11+ mins
             </div>
             <div>
               <span
                 className={`${leaderboardStyles.legendBox} ${leaderboardStyles.legendOrange}`}
               />{" "}
-              11–30 mins
+              6–10 mins
             </div>
             <div>
               <span
                 className={`${leaderboardStyles.legendBox} ${leaderboardStyles.legendYellow}`}
               />{" "}
-              5–10 mins
+              3–5 mins
             </div>
           </div>
 
