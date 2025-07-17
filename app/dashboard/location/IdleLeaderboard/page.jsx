@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { collection, onSnapshot, getDocs } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../../lib/firebaseConfig";
 import leaderboardStyles from "./idleLeaderboard.module.css";
 
@@ -67,73 +67,76 @@ export default function IdleDriversLeaderboard() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setCompanyID(localStorage.getItem("companyID"));
+      const storedCompanyID = localStorage.getItem("companyID");
+      if (storedCompanyID) setCompanyID(storedCompanyID);
     }
   }, []);
 
   useEffect(() => {
-    if (!companyID) return;
-
-    let unsubscribe = null;
+    let interval;
 
     const fetchData = async () => {
-      setLoading(true);
+      if (!companyID) return;
+
       const driversStatusMap = await fetchDriversStatus();
       const routeMap = await fetchRoutePlateNumbers();
 
-      unsubscribe = onSnapshot(collection(db, "BusLocation"), (snapshot) => {
-        let buses = snapshot.docs
-          .map((doc) => {
-            const data = doc.data();
-            const driverInfo = driversStatusMap[data.driverID] || {};
-            const plateNumber =
-              data.plateNumber || routeMap[data.driverID] || "N/A";
+      const snapshot = await getDocs(collection(db, "BusLocation"));
 
-            return {
-              id: doc.id,
-              driverID: data.driverID || "N/A",
-              plateNumber,
-              lastUpdated: data.lastUpdated,
-              companyID: driverInfo.companyID,
-              driverStatus: driverInfo.status,
-            };
-          })
-          .filter(
-            (bus) =>
-              bus.companyID === companyID && bus.driverStatus === "active"
-          );
+      let buses = snapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+          const driverInfo = driversStatusMap[data.driverID] || {};
+          const plateNumber =
+            data.plateNumber || routeMap[data.driverID] || "N/A";
 
-        let withIdleTime = buses
-          .map((bus) => ({
-            ...bus,
-            idleMinutes: getIdleMinutes(bus),
-          }))
-          .filter((bus) => bus.idleMinutes >= 3);
-
-        if (selectedFilter === "3-5") {
-          withIdleTime = withIdleTime.filter(
-            (bus) => bus.idleMinutes >= 3 && bus.idleMinutes <= 5
-          );
-        } else if (selectedFilter === "6-10") {
-          withIdleTime = withIdleTime.filter(
-            (bus) => bus.idleMinutes >= 6 && bus.idleMinutes <= 10
-          );
-        } else if (selectedFilter === "11+") {
-          withIdleTime = withIdleTime.filter((bus) => bus.idleMinutes > 10);
-        }
-
-        withIdleTime = withIdleTime.sort(
-          (a, b) => b.idleMinutes - a.idleMinutes
+          return {
+            id: doc.id,
+            driverID: data.driverID || "N/A",
+            plateNumber,
+            lastUpdated: data.lastUpdated,
+            companyID: driverInfo.companyID,
+            driverStatus: driverInfo.status,
+          };
+        })
+        .filter(
+          (bus) =>
+            bus.companyID === companyID && bus.driverStatus === "active"
         );
 
-        setBusLocations(withIdleTime);
-        setLoading(false);
-      });
+      let withIdleTime = buses
+        .map((bus) => ({
+          ...bus,
+          idleMinutes: getIdleMinutes(bus),
+        }))
+        .filter((bus) => bus.idleMinutes >= 3);
+
+      if (selectedFilter === "3-5") {
+        withIdleTime = withIdleTime.filter(
+          (bus) => bus.idleMinutes >= 3 && bus.idleMinutes <= 5
+        );
+      } else if (selectedFilter === "6-10") {
+        withIdleTime = withIdleTime.filter(
+          (bus) => bus.idleMinutes >= 6 && bus.idleMinutes <= 10
+        );
+      } else if (selectedFilter === "11+") {
+        withIdleTime = withIdleTime.filter((bus) => bus.idleMinutes > 10);
+      }
+
+      withIdleTime = withIdleTime.sort(
+        (a, b) => b.idleMinutes - a.idleMinutes
+      );
+
+      setBusLocations(withIdleTime);
+      setLoading(false);
     };
 
-    fetchData();
+    if (companyID) {
+      fetchData(); // Initial load
+      interval = setInterval(fetchData, 3000); // Repeat every 3 seconds
+    }
 
-    return () => unsubscribe && unsubscribe();
+    return () => clearInterval(interval); // Cleanup on unmount
   }, [companyID, selectedFilter]);
 
   return (

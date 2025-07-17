@@ -81,6 +81,14 @@ export default function BusLocationPage() {
   const companyID =
     typeof window !== "undefined" ? localStorage.getItem("companyID") : null;
 
+  // 🕒 Re-render every 30 seconds to update idle time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBusLocations((prev) => [...prev]); // trigger re-render
+    }, 30000); // 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
   const fetchDriversStatus = async () => {
     const snapshot = await getDocs(collection(db, "Drivers"));
     const map = {};

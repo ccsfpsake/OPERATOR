@@ -1,5 +1,5 @@
 "use client";
-
+/* global Promise */
 import { useEffect, useState } from "react";
 import MenuLink from "./menuLink/menuLink";
 import styles from "./sidebar.module.css";
@@ -124,7 +124,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
     let unsubMessageListeners = [];
 
     const unsubReports = onSnapshot(reportQuery, (snapshot) => {
-      unsubMessageListeners.forEach((unsub) => unsub()); // Clean previous
+      unsubMessageListeners.forEach((unsub) => unsub());
       unsubMessageListeners = [];
 
       let reportsStatus = {};
@@ -154,41 +154,56 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
       });
     });
 
-    const unsubIdle = onSnapshot(collection(db, "BusLocation"), async (snapshot) => {
-      const driversSnapshot = await getDocs(collection(db, "Drivers"));
-      const driversMap = {};
-      driversSnapshot.forEach((doc) => {
-        const data = doc.data();
-        driversMap[data.driverID] = data;
-      });
+    const checkIdleBuses = async () => {
+      try {
+        const [busSnapshot, driversSnapshot] = await Promise.all([
+          getDocs(collection(db, "BusLocation")),
+          getDocs(collection(db, "Drivers")),
+        ]);
 
-      const now = new Date();
-      const idleBuses = snapshot.docs.filter((doc) => {
-        const data = doc.data();
-        const driver = driversMap[data.driverID];
-        const isSameCompany = driver?.companyID === companyID;
-        const isActive = driver?.status === "active";
-        const lastUpdate = data.lastUpdated?.toDate?.();
-        const location = data.currentLocation;
+        const driversMap = {};
+        driversSnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.driverID) {
+            driversMap[data.driverID] = data;
+          }
+        });
 
-        if (!lastUpdate || !isSameCompany || !isActive) return false;
+        const now = new Date();
 
-        const diffMin = (now - lastUpdate) / 60000;
+        const idleBuses = busSnapshot.docs.filter((doc) => {
+          const data = doc.data();
+          const driver = driversMap[data.driverID];
+          const isSameCompany = driver?.companyID === companyID;
+          const isActive = driver?.status === "active";
+          const lastUpdate = data.lastUpdated?.toDate?.();
+          const location = data.currentLocation;
 
-        if (isAtCityCollege(location)) {
-          return diffMin >= 10;
-        }
+          if (!lastUpdate || !isSameCompany || !isActive) return false;
 
-        return diffMin >= 3;
-      });
+          const diffMin = (now - lastUpdate) / (1000 * 60);
 
-      setHasIdleBuses(idleBuses.length > 0);
-    });
+          if (isAtCityCollege(location)) {
+            return diffMin >= 10;
+          }
+
+          return diffMin >= 3;
+        });
+
+        setHasIdleBuses(idleBuses.length > 0);
+      } catch (error) {
+        console.error("Error checking idle buses:", error);
+      }
+    };
+
+    checkIdleBuses(); // Initial check
+
+    const interval = setInterval(checkIdleBuses, 5000); // Check every 30 sec
 
     return () => {
       unsubReports();
-      unsubIdle();
       unsubMessageListeners.forEach((u) => u());
+      clearInterval(interval);
     };
   }, []);
 
@@ -230,3 +245,4 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 };
 
 export default Sidebar;
+
