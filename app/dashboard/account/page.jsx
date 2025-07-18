@@ -362,7 +362,6 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
-  onAuthStateChanged,
 } from "firebase/auth";
 import Image from "next/image";
 import styles from "../../ui/dashboard/accountsetting/accountsetting.module.css";
@@ -370,7 +369,7 @@ import { FaCamera } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import CropImageModal from "../../dashboard/crop/CropImageModal";
 
-const account = () => {
+const Profile = () => {
   const [userData, setUserData] = useState({
     FName: "",
     LName: "",
@@ -392,19 +391,25 @@ const account = () => {
   const [activeTab, setActiveTab] = useState("personal");
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userRef = doc(db, "Operator", user.uid);
-        const docSnapshot = await getDoc(userRef);
-        if (docSnapshot.exists()) {
-          setUserData(docSnapshot.data());
-        }
-      } else {
-        console.log("No authenticated user found.");
-      }
-    });
+    const cachedUser = localStorage.getItem("userData");
 
-    return () => unsubscribe();
+    if (cachedUser) {
+      setUserData(JSON.parse(cachedUser));
+    } else {
+      const fetchUserData = async () => {
+        const user = auth.currentUser;
+        if (user) {
+          const userRef = doc(db, "Operator", user.uid);
+          const docSnapshot = await getDoc(userRef);
+          if (docSnapshot.exists()) {
+            const data = docSnapshot.data();
+            setUserData(data);
+            localStorage.setItem("userData", JSON.stringify(data));
+          }
+        }
+      };
+      fetchUserData();
+    }
   }, []);
 
   const handleInputChange = (e) => {
@@ -460,7 +465,10 @@ const account = () => {
           Avatar: avatarUrl,
         });
 
-        setUserData((prev) => ({ ...prev, Avatar: avatarUrl }));
+        const updatedUser = { ...userData, Avatar: avatarUrl };
+        setUserData(updatedUser);
+        localStorage.setItem("userData", JSON.stringify(updatedUser));
+
         toast.success("User information updated successfully.", { theme: "colored" });
       } catch (error) {
         toast.error("Error updating user information. Please try again.", { theme: "colored" });
@@ -509,6 +517,7 @@ const account = () => {
       <div className={styles.card}>
         <h1 className={styles.title}>Account Settings</h1>
 
+        {/* Avatar Section */}
         <div className={styles.avatarContainer}>
           <div className={styles.avatarWrapper}>
             <Image
@@ -546,21 +555,27 @@ const account = () => {
           />
         )}
 
+        {/* Tabs */}
         <div className={styles.tabContainer}>
           <button
-            className={`${styles.tabButton} ${activeTab === "personal" ? styles.activeTab : ""}`}
+            className={`${styles.tabButton} ${
+              activeTab === "personal" ? styles.activeTab : ""
+            }`}
             onClick={() => setActiveTab("personal")}
           >
             Personal Information
           </button>
           <button
-            className={`${styles.tabButton} ${activeTab === "password" ? styles.activeTab : ""}`}
+            className={`${styles.tabButton} ${
+              activeTab === "password" ? styles.activeTab : ""
+            }`}
             onClick={() => setActiveTab("password")}
           >
             Change Password
           </button>
         </div>
 
+        {/* Tab Contents */}
         {activeTab === "personal" && (
           <form onSubmit={handlePersonalInfoSubmit} className={styles.form}>
             <div className={styles.inputGroup}>
@@ -681,4 +696,4 @@ const account = () => {
   );
 };
 
-export default account;
+export default Profile;

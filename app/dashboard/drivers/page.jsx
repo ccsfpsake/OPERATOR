@@ -8,7 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { deleteDoc, doc, collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../lib/firebaseConfig";
-import { getStorage, ref, getDownloadURL } from "firebase/storage";
+import { getStorage, getDocs, ref, getDownloadURL } from "firebase/storage";
 import { useEffect, useState } from "react";
 import { FaTrash } from "react-icons/fa";
 import Pagination from "../../../app/ui/dashboard/pagination/pagination";
