@@ -273,6 +273,7 @@ const AddDriverPage = () => {
           onChange={handleImageChange}
           className={styles.imageInput}
           id="fileInput"
+          required
         />
         <label htmlFor="fileInput" className={styles.imageLabel}>
           Choose Image

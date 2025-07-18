@@ -239,6 +239,7 @@ const EditDriverPage = () => {
               name="LicenseNo"
               value={formData.LicenseNo}
               onChange={handleChange}
+              disabled
             />
           </div>
         </div>
