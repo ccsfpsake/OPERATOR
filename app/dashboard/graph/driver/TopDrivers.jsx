@@ -29,18 +29,18 @@ const groupByPeriod = (date, type) => {
   }
 };
 
-const getFormattedDateLabel = (period, createdAt) => {
-  if (!createdAt) return "";
+const getFormattedDateLabel = (period, referenceDate) => {
+  if (!referenceDate) return "";
 
-  const date = dayjs(createdAt);
+  const date = dayjs(referenceDate);
 
   switch (period) {
     case "day":
       return date.format("MMMM D, YYYY");
 
     case "week": {
-      const startOfWeek = date.startOf("week");
-      const endOfWeek = date.endOf("week");
+      const startOfWeek = date.startOf("isoWeek");
+      const endOfWeek = date.endOf("isoWeek");
       return `${startOfWeek.format("MMMM D")} – ${endOfWeek.format("D, YYYY")}`;
     }
 
@@ -100,11 +100,11 @@ const TopDriversGrouped = () => {
           tripsSnap.forEach((tripDoc) => {
             const trip = tripDoc.data();
             const fare = Number(trip.fare) || 0;
-            const createdAt = trip.createdAt?.toDate?.();
-            if (!createdAt) return;
+            const tripDate = trip.onDate?.toDate?.();
+            if (!tripDate) return;
 
             for (const period of periods) {
-              const key = groupByPeriod(createdAt, period);
+              const key = groupByPeriod(tripDate, period);
               const groupKey = `${key}-${driverID}`;
 
               if (!fareGroups[period][groupKey]) {
@@ -113,7 +113,7 @@ const TopDriversGrouped = () => {
                   name,
                   image,
                   periodKey: key,
-                  createdAt,
+                  createdAt: tripDate,
                   totalFare: 0,
                 };
               }
@@ -145,10 +145,7 @@ const TopDriversGrouped = () => {
   }, []);
 
   const currentTop = groupedDrivers[selectedPeriod];
-  const dateLabel =
-    currentTop.length > 0
-      ? getFormattedDateLabel(selectedPeriod, currentTop[0].createdAt)
-      : "";
+  const dateLabel = getFormattedDateLabel(selectedPeriod, new Date());
 
   return (
     <div className={styles.container}>
