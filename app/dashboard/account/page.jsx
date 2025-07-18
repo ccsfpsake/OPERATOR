@@ -342,7 +342,6 @@
 
 // export default Profile;
 
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -381,33 +380,28 @@ const Profile = () => {
     operatorID: "",
   });
 
+  const [authLoaded, setAuthLoaded] = useState(false);
   const [loading, setLoading] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
   const [cropModalOpen, setCropModalOpen] = useState(false);
+
   const [newPassword, setNewPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [activeTab, setActiveTab] = useState("personal");
 
+  // ✅ FIXED: Always load user data after auth state is ready
   useEffect(() => {
-    const localData = localStorage.getItem("userData");
-    if (localData) {
-      setUserData(JSON.parse(localData));
-    }
-
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
         const userRef = doc(db, "Operator", user.uid);
         const docSnapshot = await getDoc(userRef);
         if (docSnapshot.exists()) {
-          const data = docSnapshot.data();
-          setUserData(data);
-          localStorage.setItem("userData", JSON.stringify(data));
+          setUserData(docSnapshot.data());
         }
-      } else {
-        localStorage.removeItem("userData");
       }
+      setAuthLoaded(true);
     });
 
     return () => unsubscribe();
@@ -461,14 +455,12 @@ const Profile = () => {
           }
         }
 
-        const updatedData = {
+        await updateDoc(userRef, {
           ...userData,
           Avatar: avatarUrl,
-        };
+        });
 
-        await updateDoc(userRef, updatedData);
-        setUserData(updatedData);
-        localStorage.setItem("userData", JSON.stringify(updatedData));
+        setUserData((prev) => ({ ...prev, Avatar: avatarUrl }));
         toast.success("User information updated successfully.", { theme: "colored" });
       } catch (error) {
         toast.error("Error updating user information. Please try again.", { theme: "colored" });
@@ -510,6 +502,8 @@ const Profile = () => {
       toast.error("Failed to update password. Please try again.", { theme: "colored" });
     }
   };
+
+  if (!authLoaded) return <p className={styles.loading}>Loading...</p>;
 
   return (
     <div className={styles.container}>
@@ -558,17 +552,13 @@ const Profile = () => {
         {/* Tabs */}
         <div className={styles.tabContainer}>
           <button
-            className={`${styles.tabButton} ${
-              activeTab === "personal" ? styles.activeTab : ""
-            }`}
+            className={`${styles.tabButton} ${activeTab === "personal" ? styles.activeTab : ""}`}
             onClick={() => setActiveTab("personal")}
           >
             Personal Information
           </button>
           <button
-            className={`${styles.tabButton} ${
-              activeTab === "password" ? styles.activeTab : ""
-            }`}
+            className={`${styles.tabButton} ${activeTab === "password" ? styles.activeTab : ""}`}
             onClick={() => setActiveTab("password")}
           >
             Change Password
