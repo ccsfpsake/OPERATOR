@@ -142,25 +142,17 @@ const Profile = () => {
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
+        } finally {
+          setLoading(false);
         }
       } else {
+        // No user is logged in, redirect to login
         router.push("/");
       }
-      setLoading(false);
     });
 
-    return () => unsubscribe(); // Cleanup listener on unmount
+    return () => unsubscribe();
   }, [router]);
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "Not specified";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
 
   if (loading) {
     return <div className={styles.profile}>Loading...</div>;
@@ -178,9 +170,9 @@ const Profile = () => {
         />
         <h1>
           {userData.FName}{" "}
-          {userData.MName ? `${userData.MName.charAt(0)}.` : ""}{" "}
-          {userData.LName}
+          {userData.MName ? `${userData.MName.charAt(0)}.` : ""} {userData.LName}
         </h1>
+
         {userData.Role && <p className={styles.role}>{userData.Role}</p>}
       </div>
       <div className={styles.details}>

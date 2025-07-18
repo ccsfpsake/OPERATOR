@@ -75,23 +75,54 @@ const DriversPage = () => {
     return () => unsubscribe();
   }, []);
 
+// const handleDelete = async () => {
+//   try {
+//     if (selectedDriverId) {
+//       await deleteDoc(doc(db, "Drivers", selectedDriverId));
+//       setDrivers((prevDrivers) =>
+//         prevDrivers.filter((driver) => driver.id !== selectedDriverId)
+//       );
+//       setShowModal(false);
+//       setSelectedDriverId(null);
+//       toast.success("Driver deleted successfully."); 
+//     }
+//   } catch (error) {
+//     console.error("Error deleting driver:", error);
+//     toast.error("Failed to delete driver."); 
+//   }
+// };
+
 const handleDelete = async () => {
   try {
     if (selectedDriverId) {
+      // Delete the driver document
       await deleteDoc(doc(db, "Drivers", selectedDriverId));
+
+      // Also delete all route documents with the same driverID
+      const routesRef = collection(db, "Route");
+      const querySnapshot = await getDocs(routesRef);
+
+      const batchDelete = querySnapshot.docs.filter(
+        (doc) => doc.data().driverID === selectedDriverId
+      );
+
+      for (const routeDoc of batchDelete) {
+        await deleteDoc(doc(db, "Route", routeDoc.id));
+      }
+
+      // Update local state and UI
       setDrivers((prevDrivers) =>
         prevDrivers.filter((driver) => driver.id !== selectedDriverId)
       );
       setShowModal(false);
       setSelectedDriverId(null);
-      toast.success("Driver deleted successfully."); 
+      toast.success("Driver and associated routes deleted successfully.");
     }
   } catch (error) {
-    console.error("Error deleting driver:", error);
-    toast.error("Failed to delete driver."); 
+    console.error("Error deleting driver or routes:", error);
+    toast.error("Failed to delete driver or routes.");
   }
 };
-
 
   const confirmDelete = (id) => {
     setSelectedDriverId(id);

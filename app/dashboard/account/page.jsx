@@ -370,7 +370,7 @@ import { FaCamera } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import CropImageModal from "../../dashboard/crop/CropImageModal";
 
-const Profile = () => {
+const account = () => {
   const [userData, setUserData] = useState({
     FName: "",
     LName: "",
@@ -394,16 +394,13 @@ const Profile = () => {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        try {
-          const userRef = doc(db, "Operator", user.uid);
-          const docSnapshot = await getDoc(userRef);
-          if (docSnapshot.exists()) {
-            setUserData(docSnapshot.data());
-          }
-        } catch (error) {
-          console.error("Failed to fetch user data:", error);
-          toast.error("Error fetching user data.", { theme: "colored" });
+        const userRef = doc(db, "Operator", user.uid);
+        const docSnapshot = await getDoc(userRef);
+        if (docSnapshot.exists()) {
+          setUserData(docSnapshot.data());
         }
+      } else {
+        console.log("No authenticated user found.");
       }
     });
 
@@ -512,7 +509,6 @@ const Profile = () => {
       <div className={styles.card}>
         <h1 className={styles.title}>Account Settings</h1>
 
-        {/* Avatar Section */}
         <div className={styles.avatarContainer}>
           <div className={styles.avatarWrapper}>
             <Image
@@ -550,7 +546,6 @@ const Profile = () => {
           />
         )}
 
-        {/* Tabs */}
         <div className={styles.tabContainer}>
           <button
             className={`${styles.tabButton} ${activeTab === "personal" ? styles.activeTab : ""}`}
@@ -566,7 +561,6 @@ const Profile = () => {
           </button>
         </div>
 
-        {/* Tab Contents */}
         {activeTab === "personal" && (
           <form onSubmit={handlePersonalInfoSubmit} className={styles.form}>
             <div className={styles.inputGroup}>
@@ -687,4 +681,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default account;
