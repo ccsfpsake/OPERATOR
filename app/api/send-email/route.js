@@ -146,7 +146,6 @@
 // }
 
 
-
 import sendgrid from "@sendgrid/mail";
 
 sendgrid.setApiKey(process.env.SENDGRID_API_KEY);
@@ -167,6 +166,7 @@ export async function POST(request) {
         to,
         bcc: "ccsfpsake@gmail.com",
         from: process.env.EMAIL_FROM,
+        replyTo: "sakeccsfp24@gmail.com", 
         subject: "Welcome to SAKE - Your Driver Account is Ready",
         html: `
           <div style="font-family: Arial, sans-serif; line-height: 1.5;">
@@ -215,6 +215,7 @@ export async function POST(request) {
         to,
         bcc: "ccsfpsake@gmail.com",
         from: process.env.EMAIL_FROM,
+        replyTo: "sakeccsfp24@gmail.com", // <-- Added here
         subject: "Driver Account Status Update - SAKE",
         html: `
           <div style="font-family: Arial, sans-serif; line-height: 1.5;">
