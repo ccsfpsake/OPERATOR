@@ -362,6 +362,7 @@ import {
   updatePassword,
   reauthenticateWithCredential,
   EmailAuthProvider,
+  onAuthStateChanged,
 } from "firebase/auth";
 import Image from "next/image";
 import styles from "../../ui/dashboard/accountsetting/accountsetting.module.css";
@@ -384,32 +385,32 @@ const Profile = () => {
   const [avatarFile, setAvatarFile] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
   const [cropModalOpen, setCropModalOpen] = useState(false);
-
   const [newPassword, setNewPassword] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [activeTab, setActiveTab] = useState("personal");
 
   useEffect(() => {
-    const cachedUser = localStorage.getItem("userData");
-
-    if (cachedUser) {
-      setUserData(JSON.parse(cachedUser));
-    } else {
-      const fetchUserData = async () => {
-        const user = auth.currentUser;
-        if (user) {
-          const userRef = doc(db, "Operator", user.uid);
-          const docSnapshot = await getDoc(userRef);
-          if (docSnapshot.exists()) {
-            const data = docSnapshot.data();
-            setUserData(data);
-            localStorage.setItem("userData", JSON.stringify(data));
-          }
-        }
-      };
-      fetchUserData();
+    const localData = localStorage.getItem("userData");
+    if (localData) {
+      setUserData(JSON.parse(localData));
     }
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userRef = doc(db, "Operator", user.uid);
+        const docSnapshot = await getDoc(userRef);
+        if (docSnapshot.exists()) {
+          const data = docSnapshot.data();
+          setUserData(data);
+          localStorage.setItem("userData", JSON.stringify(data));
+        }
+      } else {
+        localStorage.removeItem("userData");
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleInputChange = (e) => {
@@ -460,15 +461,14 @@ const Profile = () => {
           }
         }
 
-        await updateDoc(userRef, {
+        const updatedData = {
           ...userData,
           Avatar: avatarUrl,
-        });
+        };
 
-        const updatedUser = { ...userData, Avatar: avatarUrl };
-        setUserData(updatedUser);
-        localStorage.setItem("userData", JSON.stringify(updatedUser));
-
+        await updateDoc(userRef, updatedData);
+        setUserData(updatedData);
+        localStorage.setItem("userData", JSON.stringify(updatedData));
         toast.success("User information updated successfully.", { theme: "colored" });
       } catch (error) {
         toast.error("Error updating user information. Please try again.", { theme: "colored" });

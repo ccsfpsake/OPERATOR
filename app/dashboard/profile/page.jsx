@@ -105,6 +105,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { db, auth } from "../../lib/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 import styles from "../../ui/dashboard/profile/profile.module.css";
 import Image from "next/image";
 
@@ -124,41 +125,38 @@ const Profile = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const savedUserData = localStorage.getItem("userData");
-
-    if (savedUserData) {
-      setUserData(JSON.parse(savedUserData));
+    const localData = localStorage.getItem("userData");
+    if (localData) {
+      setUserData(JSON.parse(localData));
       setLoading(false);
-    } else {
-      const fetchUserData = async () => {
-        const user = auth.currentUser;
-        if (user) {
-          try {
-            const collectionName = "Operator";
-            const userRef = doc(db, collectionName, user.uid);
-            const docSnapshot = await getDoc(userRef);
-            if (docSnapshot.exists()) {
-              const data = docSnapshot.data();
-              const fullData = {
-                ...data,
-                Role: collectionName,
-              };
-              setUserData(fullData);
-              localStorage.setItem("userData", JSON.stringify(fullData)); // Save to localStorage
-            } else {
-              console.warn("No user data found");
-            }
-          } catch (error) {
-            console.error("Error fetching user data:", error);
-          }
-        } else {
-          router.push("/");
-        }
-        setLoading(false);
-      };
-
-      fetchUserData();
     }
+
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const collectionName = "Operator";
+          const userRef = doc(db, collectionName, user.uid);
+          const docSnapshot = await getDoc(userRef);
+          if (docSnapshot.exists()) {
+            const data = docSnapshot.data();
+            const updatedData = {
+              ...data,
+              Role: collectionName,
+            };
+            setUserData(updatedData);
+            localStorage.setItem("userData", JSON.stringify(updatedData));
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      } else {
+        localStorage.removeItem("userData");
+        router.push("/");
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, [router]);
 
   if (loading) {
@@ -179,6 +177,7 @@ const Profile = () => {
           {userData.FName}{" "}
           {userData.MName ? `${userData.MName.charAt(0)}.` : ""} {userData.LName}
         </h1>
+
         {userData.Role && <p className={styles.role}>{userData.Role}</p>}
       </div>
       <div className={styles.details}>
