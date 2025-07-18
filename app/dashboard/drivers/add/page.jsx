@@ -12,7 +12,6 @@ import {
   setDoc,
 } from "firebase/firestore";
 import {
-  getAuth,
   createUserWithEmailAndPassword,
 } from "firebase/auth";
 import {
@@ -28,6 +27,7 @@ import styles from "../../../ui/dashboard/drivers/adddriver.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import CropImageModal from "../../..//dashboard/crop/CropImageModal";
+import { secondaryAuth } from "../../../lib/secondaryFirebase";
 
 const capitalizeFirstLetter = (str) =>
   str
@@ -150,10 +150,9 @@ const AddDriverPage = () => {
         setLoading(false);
         return;
       }
-
-      const auth = getAuth();
       const otp = generateOTP();
-      await createUserWithEmailAndPassword(auth, email, otp);
+      await createUserWithEmailAndPassword(secondaryAuth, email, otp);
+
 
       const driverData = {
         driverID,
