@@ -58,6 +58,24 @@ const getFormattedDateLabel = (period, referenceDate) => {
   }
 };
 
+const isInPeriod = (date, period) => {
+  const now = dayjs();
+  const target = dayjs(date);
+
+  switch (period) {
+    case "day":
+      return target.isSame(now, "day");
+    case "week":
+      return target.isSame(now, "isoWeek");
+    case "month":
+      return target.isSame(now, "month");
+    case "year":
+      return target.isSame(now, "year");
+    default:
+      return false;
+  }
+};
+
 const TopDriversGrouped = () => {
   const [groupedDrivers, setGroupedDrivers] = useState({
     day: [],
@@ -100,11 +118,13 @@ const TopDriversGrouped = () => {
           tripsSnap.forEach((tripDoc) => {
             const trip = tripDoc.data();
             const fare = Number(trip.fare) || 0;
-            const tripDate = trip.onDate?.toDate?.();
-            if (!tripDate) return;
+            const createdAt = trip.createdAt?.toDate?.();
+            if (!createdAt) return;
 
             for (const period of periods) {
-              const key = groupByPeriod(tripDate, period);
+              if (!isInPeriod(createdAt, period)) continue;
+
+              const key = groupByPeriod(createdAt, period);
               const groupKey = `${key}-${driverID}`;
 
               if (!fareGroups[period][groupKey]) {
@@ -113,7 +133,7 @@ const TopDriversGrouped = () => {
                   name,
                   image,
                   periodKey: key,
-                  createdAt: tripDate,
+                  createdAt,
                   totalFare: 0,
                 };
               }
