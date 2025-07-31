@@ -82,6 +82,7 @@ export default function BusLocationPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const itemsPerPage = 7;
 
   const hasFitBounds = useRef(false);
@@ -90,7 +91,7 @@ export default function BusLocationPage() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setBusLocations((prev) => [...prev]);
+      setRefreshTrigger((prev) => prev + 1);
     }, 30000);
     return () => clearInterval(interval);
   }, []);
@@ -226,19 +227,19 @@ export default function BusLocationPage() {
     });
   }, [busLocations, searchTerm]);
 
-  const idleBuses = useMemo(() => {
-    return busLocations.filter((bus) => {
-      const lastUpdate = bus.lastUpdated?.toDate?.();
-      if (!lastUpdate) return false;
-      const idleMinutes = Math.floor((Date.now() - lastUpdate) / 60000);
-      return isAtCityCollege(bus) ? idleMinutes >= 10 : idleMinutes >= 3;
+  const idleBusWithTime = useMemo(() => {
+    return busLocations.map((bus) => ({
+      ...bus,
+      idle: getIdleTime(bus),
+    })).filter((bus) => {
+      return bus.idle !== "Moving";
     });
-  }, [busLocations]);
+  }, [busLocations, refreshTrigger]);
 
-  const totalPages = Math.ceil(idleBuses.length / itemsPerPage);
+  const totalPages = Math.ceil(idleBusWithTime.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentIdleBuses = idleBuses.slice(indexOfFirstItem, indexOfLastItem);
+  const currentIdleBuses = idleBusWithTime.slice(indexOfFirstItem, indexOfLastItem);
 
   const mapOptions = useMemo(() => ({
     styles: [
@@ -274,6 +275,9 @@ export default function BusLocationPage() {
                 }}
                 className={styles.searchInput}
               />
+              {filteredBuses.length === 0 && (
+                <div className={styles.noMatch}>No buses match your search.</div>
+              )}
             </div>
             <GoogleMap
               mapContainerStyle={containerStyle}
@@ -354,65 +358,64 @@ export default function BusLocationPage() {
               )}
             </GoogleMap>
           </div>
-<div className={styles.statusContentWrapper}>
-  <div className={styles.statusReportContainer}>
-    <h2 className={styles.statusReportTitle}>Idle Time Report</h2>
-    <div className={styles.tableWrapper}>
-      <table className={styles.statusTable}>
-        <thead>
-          <tr>
-            <th>Driver</th>
-            <th>Driver ID</th>
-            <th>Plate Number</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentIdleBuses.length === 0 ? (
-            <tr>
-              <td colSpan="4" className={styles.noData}>No Idle Time Report</td>
-            </tr>
-          ) : (
-            currentIdleBuses.map((bus) => {
-              const idle = getIdleTime(bus);
-              const fullName = `${bus.LName}, ${bus.FName} ${bus.MName}`.trim();
-              return (
-                <tr key={bus.id} className={styles.idleRow} title={idle}>
-                  <td>
-                    <div className={styles.user}>
-                      {bus.imageUrl && (
-                        <Image
-                          src={bus.imageUrl}
-                          alt="avatar"
-                          width={40}
-                          height={40}
-                          className={styles.userImage}
-                        />
-                      )}
-                      <span>{fullName || "-"}</span>
-                    </div>
-                  </td>
-                  <td>{bus.driverID || "-"}</td>
-                  <td>{bus.plateNumber || "-"}</td>
-                  <td><span style={{ color: "blue" }}>{idle}</span></td>
-                </tr>
-              );
-            })
-          )}
-        </tbody>
-      </table>
-    </div>
-          <Pagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-      />
-  </div>
-    <div className={styles.chatWrapper}>
-    <ChatBox companyID={companyID} />
-  </div>
-</div>
 
+          <div className={styles.statusContentWrapper}>
+            <div className={styles.statusReportContainer}>
+              <h2 className={styles.statusReportTitle}>Idle Time Report</h2>
+              <div className={styles.tableWrapper}>
+                <table className={styles.statusTable}>
+                  <thead>
+                    <tr>
+                      <th>Driver</th>
+                      <th>Driver ID</th>
+                      <th>Plate Number</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {currentIdleBuses.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" className={styles.noData}>No Idle Time Report</td>
+                      </tr>
+                    ) : (
+                      currentIdleBuses.map((bus) => {
+                        const fullName = `${bus.LName}, ${bus.FName} ${bus.MName}`.trim();
+                        return (
+                          <tr key={bus.id} className={styles.idleRow} title={bus.idle}>
+                            <td>
+                              <div className={styles.user}>
+                                {bus.imageUrl && (
+                                  <Image
+                                    src={bus.imageUrl}
+                                    alt="avatar"
+                                    width={40}
+                                    height={40}
+                                    className={styles.userImage}
+                                  />
+                                )}
+                                <span>{fullName || "-"}</span>
+                              </div>
+                            </td>
+                            <td>{bus.driverID || "-"}</td>
+                            <td>{bus.plateNumber || "-"}</td>
+                            <td><span style={{ color: "blue" }}>{bus.idle}</span></td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+            <div className={styles.chatWrapper}>
+              <ChatBox companyID={companyID} />
+            </div>
+          </div>
         </div>
       </div>
     </div>
