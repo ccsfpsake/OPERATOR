@@ -420,6 +420,7 @@
 // }
 
 
+
 "use client";
 import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import {
@@ -479,22 +480,16 @@ const getIdleTime = (bus) => {
     const now = new Date();
     const diffMs = now - lastUpdate;
     const idleMinutes = Math.floor(diffMs / 60000);
-
-    // City College buses: show only if idle >= 10 mins
-    if (isAtCityCollege(bus)) {
-      if (idleMinutes < 10) return "Moving";
+    if (idleMinutes >= 0) {
       const baseText = formatIdleTime(idleMinutes);
-      return `${baseText} (CCSFP-C3)`;
+      if (isAtCityCollege(bus) && idleMinutes >= 10) {
+        return `${baseText} (CCSFP-C3)`;
+      }
+      return baseText;
     }
-
-    // Other buses: show only if idle >= 3 mins
-    if (idleMinutes < 3) return "Moving";
-    return formatIdleTime(idleMinutes);
   }
-
   return "Moving";
 };
-
 
 export default function BusLocationPage() {
   const { isLoaded } = useLoadScript({
@@ -655,14 +650,22 @@ export default function BusLocationPage() {
     });
   }, [busLocations, searchTerm]);
 
-  const idleBusWithTime = useMemo(() => {
-    return busLocations.map((bus) => ({
+const idleBusWithTime = useMemo(() => {
+  return busLocations
+    .map((bus) => ({
       ...bus,
       idle: getIdleTime(bus),
-    })).filter((bus) => {
-      return bus.idle !== "Moving";
+    }))
+    .filter((bus) => {
+      if (typeof bus.idle !== "string") return false;
+      const match = bus.idle.match(/Not moved for (\d+)/);
+      if (match && parseInt(match[1]) >= 3) {
+        return true;
+      }
+      return false;
     });
-  }, [busLocations, refreshTrigger]);
+}, [busLocations, refreshTrigger]);
+
 
   const totalPages = Math.ceil(idleBusWithTime.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
