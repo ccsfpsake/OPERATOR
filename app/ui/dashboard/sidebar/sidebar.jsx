@@ -123,36 +123,45 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
     let unsubMessageListeners = [];
 
-    const unsubReports = onSnapshot(reportQuery, (snapshot) => {
-      unsubMessageListeners.forEach((unsub) => unsub());
-      unsubMessageListeners = [];
+const unsubReports = onSnapshot(reportQuery, (snapshot) => {
+  unsubMessageListeners.forEach((unsub) => unsub());
+  unsubMessageListeners = [];
 
-      let reportsStatus = {};
+  const reportsStatus = {};
 
-      snapshot.docs.forEach((docSnap) => {
-        const reportID = docSnap.id;
-        const reportData = docSnap.data();
+  snapshot.docs.forEach((docSnap) => {
+    const reportID = docSnap.id;
+    const reportData = docSnap.data();
 
-        const messagesRef = collection(db, "busReports", reportID, "messages");
+    const messagesRef = collection(db, "busReports", reportID, "messages");
 
-        const unsubMsg = onSnapshot(messagesRef, (msgSnap) => {
-          const messages = msgSnap.docs.map((d) => d.data());
-          const hasMessages = messages.length > 0;
-          const hasUnreadAdmin = messages.some(
-            (msg) => msg.senderRole === "admin" && msg.seen === false
-          );
+    const unsubMsg = onSnapshot(messagesRef, (msgSnap) => {
+      const messages = msgSnap.docs.map((d) => d.data());
 
-          const isNewUnread = !hasMessages && !reportData.operatorSeen;
+      let showDot = false;
 
-          reportsStatus[reportID] = hasUnreadAdmin || isNewUnread;
+      if (reportData.status !== "settled") {
+        const hasMessages = messages.length > 0;
 
-          const hasAnyUnread = Object.values(reportsStatus).some((v) => v === true);
-          setHasUnreadReports(hasAnyUnread);
-        });
+        const hasUnreadAdmin = messages.some(
+          (msg) => msg.senderRole === "admin" && msg.seen === false
+        );
 
-        unsubMessageListeners.push(unsubMsg);
-      });
+        const isNewUnread = !hasMessages && !reportData.operatorSeen;
+
+        showDot = hasUnreadAdmin || isNewUnread;
+      }
+
+      // 👇 force update the reportsStatus map
+      reportsStatus[reportID] = showDot;
+
+      const hasAnyUnread = Object.values(reportsStatus).some((v) => v === true);
+      setHasUnreadReports(hasAnyUnread);
     });
+
+    unsubMessageListeners.push(unsubMsg);
+  });
+});
 
     const checkIdleBuses = async () => {
       try {
@@ -198,7 +207,7 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
 
     checkIdleBuses(); // Initial check
 
-    const interval = setInterval(checkIdleBuses, 5000); // Check every 30 sec
+    const interval = setInterval(checkIdleBuses, 5000); 
 
     return () => {
       unsubReports();
