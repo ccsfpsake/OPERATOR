@@ -151,65 +151,70 @@ const ChatBox = ({ companyID }) => {
   return (
     <div className={styles.chatWrapper}>
       <div className={styles.chatHeader}>Chat with CPOSCO</div>
-      <div className={styles.chatBox}>
-        {messages.map((msg, i) => {
-          const prev = messages[i - 1];
-          const isAdmin = msg.senderRole === "admin";
-          const isLastAdminMsg = isAdmin && i === messages.length - 1;
+        <div className={styles.chatBox}>
+          {messages.length === 0 && (
+            <div className={styles.noData}>No messages yet. Start the conversation!</div>
+          )}
 
-          return (
-            <div key={msg.id}>
-              {shouldShowDate(msg.createdAt, prev?.createdAt) && (
-                <div className={styles.dateDivider}>{formatDate(msg.createdAt)}</div>
-              )}
-              {visibleTimestamps.includes(msg.id) && (
-                <div className={styles.timestampTopCenter}>{formatTime(msg.createdAt)}</div>
-              )}
-              <div
-                className={`${styles.messageRow} ${isAdmin ? styles.right : styles.left}`}
-                onClick={() => toggleTimestamp(msg.id)}
-              >
-                <div className={styles.messageBubble}>
-                  {msg.text && <p>{msg.text}</p>}
-                  {msg.imageUrl && (
-                  <Image
-                    src={msg.imageUrl}
-                    alt="Chat image"
-                    className={styles.media}
-                    width={300}
-                    height={200}
-                    unoptimized
-                    onClick={() => {
-                      setModalSrc(msg.imageUrl);
-                      setModalType("image");
-                    }}
-                  />
-                  )}
-                  {msg.docUrl && (
-                    <div className={styles.docContainer}>
-                      <span
+          {messages.map((msg, i) => {
+            const prev = messages[i - 1];
+            const isAdmin = msg.senderRole === "admin";
+            const isLastAdminMsg = isAdmin && i === messages.length - 1;
+
+            return (
+              <div key={msg.id}>
+                {shouldShowDate(msg.createdAt, prev?.createdAt) && (
+                  <div className={styles.dateDivider}>{formatDate(msg.createdAt)}</div>
+                )}
+                {visibleTimestamps.includes(msg.id) && (
+                  <div className={styles.timestampTopCenter}>{formatTime(msg.createdAt)}</div>
+                )}
+                <div
+                  className={`${styles.messageRow} ${isAdmin ? styles.right : styles.left}`}
+                  onClick={() => toggleTimestamp(msg.id)}
+                >
+                  <div className={styles.messageBubble}>
+                    {msg.text && <p>{msg.text}</p>}
+                    {msg.imageUrl && (
+                      <Image
+                        src={msg.imageUrl}
+                        alt="Chat image"
+                        className={styles.media}
+                        width={300}
+                        height={200}
+                        unoptimized
                         onClick={() => {
-                          setModalSrc(msg.docUrl);
-                          setModalFileName(msg.filename);
-                          setModalType("document");
+                          setModalSrc(msg.imageUrl);
+                          setModalType("image");
                         }}
-                      >
-                        {msg.filename || "Open Document"}
-                      </span>
-                    </div>
-                  )}
+                      />
+                    )}
+                    {msg.docUrl && (
+                      <div className={styles.docContainer}>
+                        <span
+                          onClick={() => {
+                            setModalSrc(msg.docUrl);
+                            setModalFileName(msg.filename);
+                            setModalType("document");
+                          }}
+                        >
+                          {msg.filename || "Open Document"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
+                {isLastAdminMsg && (
+                  <div className={styles.statusBottom}>
+                    {msg.status === "sending" && <span>Sending...</span>}
+                    {msg.status === "delivered" && !msg.seen && <span>Delivered</span>}
+                    {msg.seen && <span>Seen</span>}
+                  </div>
+                )}
               </div>
-              {isLastAdminMsg && (
-                <div className={styles.statusBottom}>
-                  {msg.status === "sending" && <span>Sending...</span>}
-                  {msg.status === "delivered" && !msg.seen && <span>Delivered</span>}
-                  {msg.seen && <span>Seen</span>}
-                </div>
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+
         {typing && <div className={styles.typingIndicator}>typing...</div>}
         <div ref={chatEndRef} />
       </div>

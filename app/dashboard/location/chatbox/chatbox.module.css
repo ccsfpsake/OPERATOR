@@ -10,6 +10,12 @@
   font-family: Arial, Helvetica, sans-serif;
   box-sizing: border-box;
 }
+.noData {
+  text-align: center;
+  font-size: 1rem;
+  color: #888888;
+  padding: 20px 0;
+}
 
 .chatHeader {
   font-weight: bold;

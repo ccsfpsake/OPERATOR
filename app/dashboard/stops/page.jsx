@@ -54,8 +54,8 @@ const StopsIndexPage = () => {
                 className={styles.backButton}
                 onClick={() => setSelectedLineId(null)}
               >
-                <FaArrowLeftLong />
-              </button>
+                <FaArrowLeftLong /> Back to Routes
+              </button> 
             </div>
             <BusStopsPage lineId={selectedLineId} />
           </>

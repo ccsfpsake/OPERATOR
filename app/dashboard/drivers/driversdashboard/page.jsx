@@ -268,7 +268,7 @@ export default function BusLocationPage() {
               position={{ lat: stop.geo.latitude, lng: stop.geo.longitude }}
               icon={{
                 url: "/stop-icon.png",
-                scaledSize: new window.google.maps.Size(25, 25),
+                scaledSize: new window.google.maps.Size(30, 30),
               }}
               zIndex={1}
               onClick={() => setSelectedStop(stop)}
