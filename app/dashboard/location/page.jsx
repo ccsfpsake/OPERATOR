@@ -17,6 +17,7 @@ import {
 import { db } from "../../lib/firebaseConfig";
 import styles from "../../../app/ui/dashboard/location/location.module.css";
 import ChatBox from "./chatbox/ChatBox";
+import Pagination from "../../../app/ui/dashboard/pagination/pagination";
 
 const containerStyle = { width: "100%", height: "50vh" };
 const center = { lat: 15.05, lng: 120.66 };
@@ -27,9 +28,7 @@ const calculateBearing = (prevPos, newPos) => {
   const lat2 = (Math.PI * newPos.lat) / 180;
   const dLng = (Math.PI * (newPos.lng - prevPos.lng)) / 180;
   const y = Math.sin(dLng) * Math.cos(lat2);
-  const x =
-    Math.cos(lat1) * Math.sin(lat2) -
-    Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+  const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
   return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
 };
 
@@ -43,6 +42,15 @@ const isAtCityCollege = (bus) => {
   return latDiff < threshold && lngDiff < threshold;
 };
 
+const formatIdleTime = (idleMinutes) => {
+  if (idleMinutes >= 60) {
+    const hours = Math.floor(idleMinutes / 60);
+    const mins = idleMinutes % 60;
+    return `Not moved for ${hours} hour${hours > 1 ? "s" : ""} ${mins} min`;
+  }
+  return `Not moved for ${idleMinutes} min`;
+};
+
 const getIdleTime = (bus) => {
   if (bus.lastUpdated?.toDate) {
     const lastUpdate = bus.lastUpdated.toDate();
@@ -50,15 +58,10 @@ const getIdleTime = (bus) => {
     const diffMs = now - lastUpdate;
     const idleMinutes = Math.floor(diffMs / 60000);
     if (idleMinutes >= 0) {
-      const baseText =
-        idleMinutes >= 60
-          ? `Not moved for ${Math.floor(idleMinutes / 60)} hour${Math.floor(idleMinutes / 60) > 1 ? "s" : ""} ${idleMinutes % 60} min`
-          : `Not moved for ${idleMinutes} min`;
-
+      const baseText = formatIdleTime(idleMinutes);
       if (isAtCityCollege(bus) && idleMinutes >= 10) {
         return `${baseText} (CCSFP-C3)`;
       }
-
       return baseText;
     }
   }
@@ -77,19 +80,22 @@ export default function BusLocationPage() {
   const [map, setMap] = useState(null);
   const [zoom, setZoom] = useState(15);
   const [searchTerm, setSearchTerm] = useState("");
-  const busRefs = useRef({});
-  const companyID =
-    typeof window !== "undefined" ? localStorage.getItem("companyID") : null;
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 7;
 
-  // 🕒 Re-render every 30 seconds to update idle time
+  const hasFitBounds = useRef(false);
+  const busRefs = useRef({});
+  const companyID = typeof window !== "undefined" ? localStorage.getItem("companyID") : null;
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setBusLocations((prev) => [...prev]); // trigger re-render
-    }, 30000); // 30 seconds
+      setBusLocations((prev) => [...prev]);
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  const fetchDriversStatus = async () => {
+  const fetchDriversStatus = useCallback(async () => {
     const snapshot = await getDocs(collection(db, "Drivers"));
     const map = {};
     snapshot.forEach((doc) => {
@@ -106,9 +112,9 @@ export default function BusLocationPage() {
       }
     });
     return map;
-  };
+  }, []);
 
-  const fetchRoutePlateNumbers = async () => {
+  const fetchRoutePlateNumbers = useCallback(async () => {
     const snapshot = await getDocs(collection(db, "Route"));
     const map = {};
     snapshot.forEach((doc) => {
@@ -121,9 +127,11 @@ export default function BusLocationPage() {
       }
     });
     return map;
-  };
+  }, []);
 
   useEffect(() => {
+    if (!companyID) return;
+
     let unsubBuses = null;
     let unsubStops = null;
 
@@ -137,7 +145,6 @@ export default function BusLocationPage() {
             const data = doc.data();
             const routeInfo = routeMap[data.driverID] || {};
             const driverInfo = driverMap[data.driverID] || {};
-
             return {
               id: doc.id,
               ...data,
@@ -156,27 +163,22 @@ export default function BusLocationPage() {
               bus.driverCompanyID === companyID &&
               bus.driverStatus === "active"
           );
-
         setBusLocations(buses);
+        setLoading(false);
       });
 
       unsubStops = onSnapshot(collectionGroup(db, "Stops"), (snapshot) => {
         const stops = snapshot.docs.map((doc) => {
           const data = doc.data();
           const parentDocRef = doc.ref.parent.parent;
-          const parentDocId = parentDocRef ? parentDocRef.id : "unknown";
           return {
             id: doc.id,
-            parentDocId,
+            parentDocId: parentDocRef?.id || "unknown",
             name: data.name,
             locID: data.locID,
-            geo: {
-              latitude: data.geo.latitude,
-              longitude: data.geo.longitude,
-            },
+            geo: data.geo,
           };
         });
-
         setBusStops(stops);
       });
     };
@@ -184,53 +186,76 @@ export default function BusLocationPage() {
     fetchData();
 
     return () => {
-      if (unsubBuses) unsubBuses();
-      if (unsubStops) unsubStops();
+      unsubBuses?.();
+      unsubStops?.();
     };
-  }, [companyID]);
+  }, [companyID, fetchDriversStatus, fetchRoutePlateNumbers]);
+
+  useEffect(() => {
+    if (map && busLocations.length && !hasFitBounds.current) {
+      const bounds = new window.google.maps.LatLngBounds();
+      busLocations.forEach((bus) => {
+        if (bus.currentLocation) {
+          bounds.extend({
+            lat: bus.currentLocation.latitude,
+            lng: bus.currentLocation.longitude,
+          });
+        }
+      });
+      busStops.forEach((stop) => {
+        if (stop.geo) {
+          bounds.extend({
+            lat: stop.geo.latitude,
+            lng: stop.geo.longitude,
+          });
+        }
+      });
+      map.fitBounds(bounds);
+      hasFitBounds.current = true;
+    }
+  }, [map, busLocations, busStops]);
 
   const filteredBuses = useMemo(() => {
-    return busLocations.filter(
-      (bus) =>
-        (bus.driverID &&
-          bus.driverID.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (bus.plateNumber &&
-          bus.plateNumber.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    return busLocations.filter((bus) => {
+      const fullName = `${bus.LName} ${bus.FName} ${bus.MName}`.toLowerCase();
+      return (
+        bus.driverID?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        bus.plateNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        fullName.includes(searchTerm.toLowerCase())
+      );
+    });
   }, [busLocations, searchTerm]);
 
   const idleBuses = useMemo(() => {
-    return filteredBuses.filter((bus) => {
+    return busLocations.filter((bus) => {
       const lastUpdate = bus.lastUpdated?.toDate?.();
       if (!lastUpdate) return false;
       const idleMinutes = Math.floor((Date.now() - lastUpdate) / 60000);
-      if (isAtCityCollege(bus)) return idleMinutes >= 10;
-      return idleMinutes >= 3;
+      return isAtCityCollege(bus) ? idleMinutes >= 10 : idleMinutes >= 3;
     });
-  }, [filteredBuses]);
+  }, [busLocations]);
 
-  const handleBusClick = useCallback((bus) => setSelectedBus(bus), []);
-  const handleStopClick = useCallback((stop) => setSelectedStop(stop), []);
+  const totalPages = Math.ceil(idleBuses.length / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentIdleBuses = idleBuses.slice(indexOfFirstItem, indexOfLastItem);
 
-  const mapOptions = useMemo(
-    () => ({
-      styles: [
-        { featureType: "poi", stylers: [{ visibility: "off" }] },
-        { featureType: "transit", stylers: [{ visibility: "off" }] },
-        {
-          featureType: "road",
-          elementType: "labels",
-          stylers: [{ visibility: "simplified" }],
-        },
-        { featureType: "administrative", stylers: [{ visibility: "off" }] },
-        { featureType: "landscape", stylers: [{ color: "#f5f5f5" }] },
-        { featureType: "water", stylers: [{ color: "#d6e9f8" }] },
-      ],
-    }),
-    []
-  );
+  const mapOptions = useMemo(() => ({
+    styles: [
+      { featureType: "poi", stylers: [{ visibility: "off" }] },
+      { featureType: "transit", stylers: [{ visibility: "off" }] },
+      {
+        featureType: "road",
+        elementType: "labels",
+        stylers: [{ visibility: "simplified" }],
+      },
+      { featureType: "administrative", stylers: [{ visibility: "off" }] },
+      { featureType: "landscape", stylers: [{ color: "#f5f5f5" }] },
+      { featureType: "water", stylers: [{ color: "#d6e9f8" }] },
+    ],
+  }), []);
 
-  if (!isLoaded) return <div className={styles.loading}>Loading...</div>;
+  if (!isLoaded || loading) return <div className={styles.loading}>Loading map data...</div>;
 
   return (
     <div className={styles.pageContainer}>
@@ -240,13 +265,16 @@ export default function BusLocationPage() {
             <div className={styles.searchContainer}>
               <input
                 type="text"
+                aria-label="Search by driver name, ID, or plate"
                 placeholder="Search..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
                 className={styles.searchInput}
               />
             </div>
-
             <GoogleMap
               mapContainerStyle={containerStyle}
               center={center}
@@ -261,7 +289,6 @@ export default function BusLocationPage() {
               }}
             >
               <TrafficLayer />
-
               {filteredBuses.map((bus) => {
                 const newPos = {
                   lat: bus.currentLocation?.latitude ?? center.lat,
@@ -279,126 +306,113 @@ export default function BusLocationPage() {
                       typeof window !== "undefined" && window.google
                         ? {
                             url: "/puj.png",
-                            scaledSize: new window.google.maps.Size(
-                              BUS_ICON_SIZE,
-                              BUS_ICON_SIZE
-                            ),
-                            anchor: new window.google.maps.Point(
-                              BUS_ICON_SIZE / 2,
-                              BUS_ICON_SIZE / 2
-                            ),
+                            scaledSize: new window.google.maps.Size(BUS_ICON_SIZE, BUS_ICON_SIZE),
+                            anchor: new window.google.maps.Point(BUS_ICON_SIZE / 2, BUS_ICON_SIZE / 2),
                           }
                         : undefined
                     }
                     zIndex={2}
-                    onClick={() => handleBusClick(bus)}
+                    onClick={() => setSelectedBus(bus)}
                   />
                 );
               })}
-
-              {zoom >= 15 &&
-                busStops.map((stop) => (
-                  <Marker
-                    key={`${stop.parentDocId}-${stop.id}`}
-                    position={{
-                      lat: stop.geo.latitude,
-                      lng: stop.geo.longitude,
-                    }}
-                    icon={{
-                      url: "/stop-icon.png",
-                      scaledSize: new window.google.maps.Size(25, 25),
-                    }}
-                    zIndex={1}
-                    onClick={() => handleStopClick(stop)}
-                  />
-                ))}
-
+              {zoom >= 15 && busStops.map((stop) => (
+                <Marker
+                  key={`${stop.parentDocId}-${stop.id}`}
+                  position={{ lat: stop.geo.latitude, lng: stop.geo.longitude }}
+                  icon={{
+                    url: "/stop-icon.png",
+                    scaledSize: new window.google.maps.Size(25, 25),
+                  }}
+                  zIndex={1}
+                  onClick={() => setSelectedStop(stop)}
+                />
+              ))}
               {selectedBus && (
                 <InfoWindow
                   position={busRefs.current[selectedBus.id]}
                   onCloseClick={() => setSelectedBus(null)}
                 >
                   <div>
-                    <strong>Driver ID:</strong> {selectedBus.driverID || "N/A"} <br />
-                    <strong>Plate Number:</strong> {selectedBus.plateNumber || "N/A"} <br />
-                    <strong>Route:</strong> {selectedBus.route || "N/A"} <br />
+                    <strong>Driver ID:</strong> {selectedBus.driverID || "N/A"}<br />
+                    <strong>Plate Number:</strong> {selectedBus.plateNumber || "N/A"}<br />
+                    <strong>Route:</strong> {selectedBus.route || "N/A"}<br />
                     <span style={{ color: "blue" }}>{getIdleTime(selectedBus)}</span>
                   </div>
                 </InfoWindow>
               )}
-
               {selectedStop && (
                 <InfoWindow
-                  position={{
-                    lat: selectedStop.geo.latitude,
-                    lng: selectedStop.geo.longitude,
-                  }}
+                  position={{ lat: selectedStop.geo.latitude, lng: selectedStop.geo.longitude }}
                   onCloseClick={() => setSelectedStop(null)}
                 >
                   <div>
-                    <strong>Location ID:</strong> {selectedStop.locID} <br />
-                    <strong>Stop Name:</strong> {selectedStop.name} <br />
+                    <strong>Location ID:</strong> {selectedStop.locID}<br />
+                    <strong>Stop Name:</strong> {selectedStop.name}
                   </div>
                 </InfoWindow>
               )}
             </GoogleMap>
           </div>
+<div className={styles.statusContentWrapper}>
+  <div className={styles.statusReportContainer}>
+    <h2 className={styles.statusReportTitle}>Idle Time Report</h2>
+    <div className={styles.tableWrapper}>
+      <table className={styles.statusTable}>
+        <thead>
+          <tr>
+            <th>Driver</th>
+            <th>Driver ID</th>
+            <th>Plate Number</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentIdleBuses.length === 0 ? (
+            <tr>
+              <td colSpan="4" className={styles.noData}>No Idle Time Report</td>
+            </tr>
+          ) : (
+            currentIdleBuses.map((bus) => {
+              const idle = getIdleTime(bus);
+              const fullName = `${bus.LName}, ${bus.FName} ${bus.MName}`.trim();
+              return (
+                <tr key={bus.id} className={styles.idleRow} title={idle}>
+                  <td>
+                    <div className={styles.user}>
+                      {bus.imageUrl && (
+                        <Image
+                          src={bus.imageUrl}
+                          alt="avatar"
+                          width={40}
+                          height={40}
+                          className={styles.userImage}
+                        />
+                      )}
+                      <span>{fullName || "-"}</span>
+                    </div>
+                  </td>
+                  <td>{bus.driverID || "-"}</td>
+                  <td>{bus.plateNumber || "-"}</td>
+                  <td><span style={{ color: "blue" }}>{idle}</span></td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+    </div>
+          <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
+  </div>
+    <div className={styles.chatWrapper}>
+    <ChatBox companyID={companyID} />
+  </div>
+</div>
 
-          <div className={styles.statusReportContainer}>
-            <h2 className={styles.statusReportTitle}>Idle Time Report</h2>
-            <div className={styles.tableWrapper}>
-              <table className={styles.statusTable}>
-                <thead>
-                  <tr>
-                    <th>Driver</th>
-                    <th>Driver ID</th>
-                    <th>Plate Number</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {idleBuses.length === 0 ? (
-                    <tr>
-                      <td colSpan="4" className={styles.noData}>
-                        No Idle Time Report
-                      </td>
-                    </tr>
-                  ) : (
-                    idleBuses.map((bus) => {
-                      const idle = getIdleTime(bus);
-                      const fullName = `${bus.LName}, ${bus.FName} ${bus.MName}`.trim();
-                      return (
-                        <tr key={bus.id} className={styles.idleRow} title={idle}>
-                          <td>
-                            <div className={styles.user}>
-                              {bus.imageUrl && (
-                                <Image
-                                  src={bus.imageUrl}
-                                  alt="avatar"
-                                  width={40}
-                                  height={40}
-                                  className={styles.userImage}
-                                />
-                              )}
-                              <span>{fullName || "-"}</span>
-                            </div>
-                          </td>
-                          <td>{bus.driverID || "-"}</td>
-                          <td>{bus.plateNumber || "-"}</td>
-                          <td>
-                            <span style={{ color: "blue" }}>{idle}</span>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-            <div className={styles.ChatBox}>
-              <ChatBox companyID={companyID} />
-            </div>
-          </div>
         </div>
       </div>
     </div>

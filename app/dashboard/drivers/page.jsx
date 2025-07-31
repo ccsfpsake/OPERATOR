@@ -1,7 +1,6 @@
 /* eslint-env es6, browser */
 
 "use client";
-
 import styles from "../../../app/ui/dashboard/drivers/drivers.module.css";
 import Search from "../../../app/ui/dashboard/search/search";
 import Image from "next/image";
@@ -15,20 +14,22 @@ import Pagination from "../../../app/ui/dashboard/pagination/pagination";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 const DriversPage = () => {
+
   const [drivers, setDrivers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedDriverId, setSelectedDriverId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 10; 
 
+  
   useEffect(() => {
     const companyID = localStorage.getItem("companyID");
 
     if (!companyID) {
+
       setDrivers([]);
       setLoading(false);
       return;
@@ -43,13 +44,15 @@ const DriversPage = () => {
         const driverData = doc.data();
         const driverId = doc.id;
 
-        if (driverData.companyID !== companyID) return;
+        if (driverData.companyID !== companyID) return; 
 
         driversList.push({ id: driverId, ...driverData });
       });
 
+      // Fetch driver profile images
       const fetchImages = async () => {
         const storage = getStorage();
+
         const driversWithImages = await Promise.all(
           driversList.map(async (driver) => {
             if (driver.imageUrl) {
@@ -59,12 +62,13 @@ const DriversPage = () => {
                 return { ...driver, imageUrl: url };
               } catch (error) {
                 console.error("Error fetching image URL:", error);
-                return { ...driver, imageUrl: "/noavatar.png" };
+                return { ...driver, imageUrl: "/noavatar.png" }; 
               }
             }
-            return { ...driver, imageUrl: "/noavatar.png" };
+            return { ...driver, imageUrl: "/noavatar.png" }; 
           })
         );
+
         setDrivers(driversWithImages);
         setLoading(false);
       };
@@ -72,63 +76,48 @@ const DriversPage = () => {
       fetchImages();
     });
 
-    return () => unsubscribe();
+    return () => unsubscribe(); 
   }, []);
 
-// const handleDelete = async () => {
-//   try {
-//     if (selectedDriverId) {
-//       await deleteDoc(doc(db, "Drivers", selectedDriverId));
-//       setDrivers((prevDrivers) =>
-//         prevDrivers.filter((driver) => driver.id !== selectedDriverId)
-//       );
-//       setShowModal(false);
-//       setSelectedDriverId(null);
-//       toast.success("Driver deleted successfully."); 
-//     }
-//   } catch (error) {
-//     console.error("Error deleting driver:", error);
-//     toast.error("Failed to delete driver."); 
-//   }
-// };
+  // deletion of driver
+  const handleDelete = async () => {
+    try {
+      if (selectedDriverId) {
+        await deleteDoc(doc(db, "Drivers", selectedDriverId)); 
 
-const handleDelete = async () => {
-  try {
-    if (selectedDriverId) {
-      // Delete the driver document
-      await deleteDoc(doc(db, "Drivers", selectedDriverId));
+        //delete related route
+        const routesRef = collection(db, "Route");
+        const querySnapshot = await getDocs(routesRef);
 
-      // Also delete all route documents with the same driverID
-      const routesRef = collection(db, "Route");
-      const querySnapshot = await getDocs(routesRef);
+        const batchDelete = querySnapshot.docs.filter(
+          (doc) => doc.data().driverID === selectedDriverId
+        );
 
-      const batchDelete = querySnapshot.docs.filter(
-        (doc) => doc.data().driverID === selectedDriverId
-      );
+        for (const routeDoc of batchDelete) {
+          await deleteDoc(doc(db, "Route", routeDoc.id));
+        }
 
-      for (const routeDoc of batchDelete) {
-        await deleteDoc(doc(db, "Route", routeDoc.id));
+        setDrivers((prevDrivers) =>
+          prevDrivers.filter((driver) => driver.id !== selectedDriverId)
+        );
+
+        setShowModal(false);
+        setSelectedDriverId(null);
+        toast.success("Driver deleted successfully.");
       }
-
-      // Update local state and UI
-      setDrivers((prevDrivers) =>
-        prevDrivers.filter((driver) => driver.id !== selectedDriverId)
-      );
-      setShowModal(false);
-      setSelectedDriverId(null);
-      toast.success("Driver and associated routes deleted successfully.");
+    } catch (error) {
+      console.error("Error deleting driver", error);
+      toast.error("Failed to delete driver.");
     }
-  } catch (error) {
-    console.error("Error deleting driver or routes:", error);
-    toast.error("Failed to delete driver or routes.");
-  }
-};
+  };
 
+  // Trigger delete confirmation modal
   const confirmDelete = (id) => {
     setSelectedDriverId(id);
     setShowModal(true);
   };
 
+  // Capitalize words in a name
   const capitalizeName = (name) => {
     if (!name) return "";
     return name
@@ -138,6 +127,7 @@ const handleDelete = async () => {
       .join(" ");
   };
 
+  // Filter drivers based on search
   const filteredDrivers = drivers
     .filter((driver) => {
       const term = searchTerm.toLowerCase();
@@ -156,7 +146,8 @@ const handleDelete = async () => {
         (driver.companyID && driver.companyID.toLowerCase().includes(term))
       );
     })
-    .sort((a, b) => a.driverID?.localeCompare(b.driverID))
+    .sort((a, b) => a.driverID?.localeCompare(b.driverID));
+
 
   const totalPages = Math.ceil(filteredDrivers.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -165,6 +156,7 @@ const handleDelete = async () => {
 
   return (
     <div className={styles.container}>
+      {/* Delete Confirmation Modal */}
       {showModal && (
         <div className={styles.modal}>
           <div className={styles.modalContent}>
@@ -185,6 +177,7 @@ const handleDelete = async () => {
         </div>
       )}
 
+      {/*add and search */}
       <div className={styles.top}>
         <Link href="/dashboard/drivers/add">
           <button className={styles.addButton}>Add New</button>
@@ -194,11 +187,12 @@ const handleDelete = async () => {
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
-            setCurrentPage(1);
+            setCurrentPage(1); 
           }}
         />
       </div>
 
+      {/* Driver Table */}
       <div className={styles["table-wrapper"]}>
         <table className={styles.table}>
           <thead>
@@ -214,12 +208,14 @@ const handleDelete = async () => {
           </thead>
           <tbody>
             {loading ? (
+              // Loading message
               <tr>
                 <td colSpan="7" className={styles.noData}>
                   Loading drivers...
                 </td>
               </tr>
             ) : currentDrivers.length > 0 ? (
+              // Driver data rows
               currentDrivers.map((driver) => (
                 <tr key={driver.id}>
                   <td>
@@ -242,12 +238,10 @@ const handleDelete = async () => {
                   <td>{driver.Email || "N/A"}</td>
                   <td>{driver.Contact || "N/A"}</td>
                   <td>
-                    {
-                      [driver.houseno, driver.Barangay, driver.City, driver.Province]
-                        .filter(Boolean)
-                        .map(capitalizeName)
-                        .join(", ") || "Address not available"
-                    }
+                    {[driver.houseno, driver.Barangay, driver.City, driver.Province]
+                      .filter(Boolean)
+                      .map(capitalizeName)
+                      .join(", ") || "Address not available"}
                   </td>
                   <td>
                     <div className={styles.buttons}>
@@ -265,6 +259,7 @@ const handleDelete = async () => {
                 </tr>
               ))
             ) : (
+
               <tr>
                 <td colSpan="7" className={styles.noData}>
                   No drivers found or saved.
@@ -275,27 +270,27 @@ const handleDelete = async () => {
         </table>
       </div>
 
+      {/* Pagination component */}
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
 
-<ToastContainer
-  position="top-right"
-  autoClose={2000}
-  hideProgressBar={false}
-  newestOnTop={false}
-  closeOnClick
-  rtl={false}
-  pauseOnFocusLoss
-  draggable
-  pauseOnHover
-  theme="colored"
-/>
-
+      {/* Toast Notification Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={2000} 
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
     </div>
-    
   );
 };
 

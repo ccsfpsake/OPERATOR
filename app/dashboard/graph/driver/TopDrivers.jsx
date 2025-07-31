@@ -30,29 +30,16 @@ const groupByPeriod = (date, type) => {
 };
 
 const getFormattedDateLabel = (period, referenceDate) => {
-  if (!referenceDate) return "";
-
   const date = dayjs(referenceDate);
-
   switch (period) {
     case "day":
       return date.format("MMMM D, YYYY");
-
-    case "week": {
-      const startOfWeek = date.startOf("isoWeek");
-      const endOfWeek = date.endOf("isoWeek");
-      return `${startOfWeek.format("MMMM D")} – ${endOfWeek.format("D, YYYY")}`;
-    }
-
-    case "month": {
-      const startOfMonth = date.startOf("month");
-      const endOfMonth = date.endOf("month");
-      return `${startOfMonth.format("MMMM D")} – ${endOfMonth.format("D, YYYY")}`;
-    }
-
+    case "week":
+      return `${date.startOf("isoWeek").format("MMMM D")} – ${date.endOf("isoWeek").format("D, YYYY")}`;
+    case "month":
+      return `${date.startOf("month").format("MMMM D")} – ${date.endOf("month").format("D, YYYY")}`;
     case "year":
       return date.format("YYYY");
-
     default:
       return "";
   }
@@ -61,7 +48,6 @@ const getFormattedDateLabel = (period, referenceDate) => {
 const isInPeriod = (date, period) => {
   const now = dayjs();
   const target = dayjs(date);
-
   switch (period) {
     case "day":
       return target.isSame(now, "day");
@@ -112,33 +98,45 @@ const TopDriversGrouped = () => {
           const driverID = driver.driverID;
           const name = `${driver.FName} ${driver.LName}`;
           const image = driver.imageUrl || "/default-avatar.png";
-          const tripsRef = collection(db, `DriverHistory/${driverID}/Trips`);
-          const tripsSnap = await getDocs(tripsRef);
+          const salesRef = collection(db, `dailysales/${driverID}/dailysales`);
+          const salesSnap = await getDocs(salesRef);
 
-          tripsSnap.forEach((tripDoc) => {
-            const trip = tripDoc.data();
-            const fare = Number(trip.fare) || 0;
-            const createdAt = trip.createdAt?.toDate?.();
-            if (!createdAt) return;
+          salesSnap.forEach((saleDoc) => {
+            const sale = saleDoc.data();
+            const fare = Number(sale.totals?.totalTicketAmountDetails || 0);
+            const firstDateStr = sale.firstDate;
+            const lastDateStr = sale.lastDate;
 
-            for (const period of periods) {
-              if (!isInPeriod(createdAt, period)) continue;
+            if (!firstDateStr || !lastDateStr || fare === 0) return;
 
-              const key = groupByPeriod(createdAt, period);
-              const groupKey = `${key}-${driverID}`;
+            const start = dayjs(firstDateStr);
+            const end = dayjs(lastDateStr);
+            if (!start.isValid() || !end.isValid()) return;
 
-              if (!fareGroups[period][groupKey]) {
-                fareGroups[period][groupKey] = {
-                  driverID,
-                  name,
-                  image,
-                  periodKey: key,
-                  createdAt,
-                  totalFare: 0,
-                };
+            const daysCount = end.diff(start, "day") + 1;
+            const farePerDay = fare / daysCount;
+
+            for (let d = 0; d < daysCount; d++) {
+              const currentDate = start.add(d, "day");
+
+              for (const period of periods) {
+                if (!isInPeriod(currentDate, period)) continue;
+
+                const key = groupByPeriod(currentDate, period);
+                const groupKey = `${key}-${driverID}`;
+
+                if (!fareGroups[period][groupKey]) {
+                  fareGroups[period][groupKey] = {
+                    driverID,
+                    name,
+                    image,
+                    periodKey: key,
+                    totalFare: 0,
+                  };
+                }
+
+                fareGroups[period][groupKey].totalFare += farePerDay;
               }
-
-              fareGroups[period][groupKey].totalFare += fare;
             }
           });
         }
@@ -149,7 +147,6 @@ const TopDriversGrouped = () => {
           const sorted = grouped
             .sort((a, b) => b.totalFare - a.totalFare)
             .slice(0, 3);
-
           result[period] = sorted;
         }
 
@@ -194,10 +191,7 @@ const TopDriversGrouped = () => {
           </p>
           <ul className={styles.driverList}>
             {currentTop.map((driver, index) => (
-              <li
-                className={styles.driverCard}
-                key={`${selectedPeriod}-${index}`}
-              >
+              <li className={styles.driverCard} key={`${selectedPeriod}-${index}`}>
                 <div className={styles.leftSection}>
                   <div className={styles.rank}>{index + 1}</div>
                   <img
@@ -208,7 +202,7 @@ const TopDriversGrouped = () => {
                   <div className={styles.name}>{driver.name}</div>
                 </div>
                 <div className={styles.rightSection}>
-                  ₱{driver.totalFare.toLocaleString()}
+                  ₱{Math.round(driver.totalFare).toLocaleString()}
                 </div>
               </li>
             ))}

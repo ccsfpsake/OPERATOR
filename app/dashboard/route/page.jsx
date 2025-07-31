@@ -220,7 +220,7 @@ const RoutePage = () => {
           <option value="Inactive">Inactive</option>
         </select>
         <Search
-          placeholder="Search for a driver..."
+          placeholder="Search..."
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);

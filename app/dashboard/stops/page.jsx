@@ -32,7 +32,7 @@ const StopsIndexPage = () => {
           <>
             <h2>Select a Route</h2>
             {loading ? (
-              <p className={styles.loading}>Loading routes...</p> 
+              <p className={styles.noData}>Loading routes...</p> 
             ) : (
               <div className={styles.cardGrid}>
                 {lines.map((line) => (

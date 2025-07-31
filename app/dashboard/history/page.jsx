@@ -7,12 +7,14 @@ import { db } from "../../lib/firebaseConfig";
 import Search from "../../../app/ui/dashboard/search/search";
 import Pagination from "../../../app/ui/dashboard/pagination/pagination";
 import Image from "next/image";
+import AddDailySalesModal from "../history/AddDailySalesModal";
 import styles from "../../../app/ui/dashboard/history/history.module.css";
 
 const HistoryPage = () => {
   const [drivers, setDrivers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const router = useRouter();
@@ -87,13 +89,22 @@ const HistoryPage = () => {
 return (
   <div className={styles.container}>
     <div className={styles.top}>
-      <Search
-        className={styles.search}
-        placeholder="Search.."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-    </div>
+  <button
+    className={styles.addButton}
+    onClick={() => setShowModal(true)}
+  >
+    Add Daily Sales
+  </button>
+    <Search
+    className={styles.search}
+    placeholder="Search.."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+  />
+</div>
+
+{showModal && <AddDailySalesModal onClose={() => setShowModal(false)} />}
+
 
     <div className={styles.tableWrapper}>
       <table className={styles.table}>
@@ -152,12 +163,12 @@ return (
       </table>
     </div>
 
-    <Pagination
-      currentPage={currentPage}
-      totalPages={totalPages}
-      onPrevious={handlePreviousPage}
-      onNext={handleNextPage}
-    />
+<Pagination
+  currentPage={currentPage}
+  totalPages={totalPages}
+  onPageChange={setCurrentPage}
+/>
+
   </div>
 );
 };

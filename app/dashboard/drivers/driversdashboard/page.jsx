@@ -1,13 +1,10 @@
-/* global google */
 "use client";
-
 import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import {
   GoogleMap,
   Marker,
   InfoWindow,
   useLoadScript,
-  MarkerClusterer,
   TrafficLayer,
 } from "@react-google-maps/api";
 import {
@@ -16,23 +13,56 @@ import {
   onSnapshot,
   getDocs,
 } from "firebase/firestore";
-
-import styles from "../../../ui/dashboard/drivers/driversdashboard.module.css";
-import _ from "lodash";
 import { db } from "../../../lib/firebaseConfig";
+import styles from "../../../../app/ui/dashboard/drivers/driversdashboard.module.css";
 
 const containerStyle = { width: "100%", height: "50vh" };
 const center = { lat: 15.05, lng: 120.66 };
+const BUS_ICON_SIZE = 45;
 
-// Bearing calculation (kept in case you want to use it later)
 const calculateBearing = (prevPos, newPos) => {
   const lat1 = (Math.PI * prevPos.lat) / 180;
   const lat2 = (Math.PI * newPos.lat) / 180;
   const dLng = (Math.PI * (newPos.lng - prevPos.lng)) / 180;
   const y = Math.sin(dLng) * Math.cos(lat2);
-  const x =
-    Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
+  const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(dLng);
   return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+};
+
+const isAtCityCollege = (bus) => {
+  const targetLat = 15.06137;
+  const targetLng = 120.643928;
+  const threshold = 0.0002;
+  if (!bus.currentLocation) return false;
+  const latDiff = Math.abs(bus.currentLocation.latitude - targetLat);
+  const lngDiff = Math.abs(bus.currentLocation.longitude - targetLng);
+  return latDiff < threshold && lngDiff < threshold;
+};
+
+const formatIdleTime = (idleMinutes) => {
+  if (idleMinutes >= 60) {
+    const hours = Math.floor(idleMinutes / 60);
+    const mins = idleMinutes % 60;
+    return `Not moved for ${hours} hour${hours > 1 ? "s" : ""} ${mins} min`;
+  }
+  return `Not moved for ${idleMinutes} min`;
+};
+
+const getIdleTime = (bus) => {
+  if (bus.lastUpdated?.toDate) {
+    const lastUpdate = bus.lastUpdated.toDate();
+    const now = new Date();
+    const diffMs = now - lastUpdate;
+    const idleMinutes = Math.floor(diffMs / 60000);
+    if (idleMinutes >= 0) {
+      const baseText = formatIdleTime(idleMinutes);
+      if (isAtCityCollege(bus) && idleMinutes >= 10) {
+        return `${baseText} (CCSFP-C3)`;
+      }
+      return baseText;
+    }
+  }
+  return "Moving";
 };
 
 export default function BusLocationPage() {
@@ -44,13 +74,22 @@ export default function BusLocationPage() {
   const [busStops, setBusStops] = useState([]);
   const [selectedStop, setSelectedStop] = useState(null);
   const [selectedBus, setSelectedBus] = useState(null);
-  const [zoom, setZoom] = useState(13);
   const [map, setMap] = useState(null);
-  const busRefs = useRef({});
+  const [zoom, setZoom] = useState(15);
+  const [loading, setLoading] = useState(true);
 
+  const hasFitBounds = useRef(false);
+  const busRefs = useRef({});
   const companyID = typeof window !== "undefined" ? localStorage.getItem("companyID") : null;
 
-  const fetchDriversStatus = async () => {
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setBusLocations((prev) => [...prev]);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchDriversStatus = useCallback(async () => {
     const snapshot = await getDocs(collection(db, "Drivers"));
     const map = {};
     snapshot.forEach((doc) => {
@@ -59,79 +98,71 @@ export default function BusLocationPage() {
         map[data.driverID] = {
           companyID: data.companyID,
           status: data.status || "inactive",
-          imageUrl: data.imageUrl || null,
-          LName: data.LName || "",
-          FName: data.FName || "",
-          MName: data.MName || "",
         };
       }
     });
     return map;
-  };
+  }, []);
 
-  const fetchRoutes = async () => {
+  const fetchRoutePlateNumbers = useCallback(async () => {
     const snapshot = await getDocs(collection(db, "Route"));
     const map = {};
     snapshot.forEach((doc) => {
       const data = doc.data();
-      if (data.driverID) {
+      if (data.driverID && data.plateNumber) {
         map[data.driverID] = {
-          route: data.route || "N/A",
-          plateNumber: data.plateNumber || "N/A",
+          plateNumber: data.plateNumber,
+          route: data.route || null,
         };
       }
     });
     return map;
-  };
+  }, []);
 
   useEffect(() => {
+    if (!companyID) return;
+
     let unsubBuses = null;
     let unsubStops = null;
 
     const fetchData = async () => {
-      const driverData = await fetchDriversStatus();
-      const routeData = await fetchRoutes();
+      const driverMap = await fetchDriversStatus();
+      const routeMap = await fetchRoutePlateNumbers();
 
       unsubBuses = onSnapshot(collection(db, "BusLocation"), (snapshot) => {
         const buses = snapshot.docs
           .map((doc) => {
             const data = doc.data();
-            const driverInfo = driverData[data.driverID] || {};
-            const routeInfo = routeData[data.driverID] || {};
-
+            const routeInfo = routeMap[data.driverID] || {};
+            const driverInfo = driverMap[data.driverID] || {};
             return {
               id: doc.id,
               ...data,
-              route: routeInfo.route,
               plateNumber: routeInfo.plateNumber,
+              route: routeInfo.route,
               driverCompanyID: driverInfo.companyID,
               driverStatus: driverInfo.status,
-              imageUrl: driverInfo.imageUrl,
-              FName: driverInfo.FName,
-              MName: driverInfo.MName,
             };
           })
           .filter(
-            (bus) => bus.driverCompanyID === companyID && bus.driverStatus === "active"
+            (bus) =>
+              bus.driverCompanyID === companyID &&
+              bus.driverStatus === "active"
           );
-
         setBusLocations(buses);
+        setLoading(false);
       });
 
       unsubStops = onSnapshot(collectionGroup(db, "Stops"), (snapshot) => {
         const stops = snapshot.docs.map((doc) => {
-          const parentDocRef = doc.ref.parent.parent;
-          const parentDocId = parentDocRef ? parentDocRef.id : "unknown";
           const data = doc.data();
+          const parentDocRef = doc.ref.parent.parent;
           return {
             id: doc.id,
-            parentDocId,
+            parentDocId: parentDocRef?.id || "unknown",
             name: data.name,
             locID: data.locID,
-            geo: {
-              latitude: data.geo.latitude,
-              longitude: data.geo.longitude,
-            },
+            geo: data.geo,
           };
         });
         setBusStops(stops);
@@ -141,63 +172,51 @@ export default function BusLocationPage() {
     fetchData();
 
     return () => {
-      if (unsubBuses) unsubBuses();
-      if (unsubStops) unsubStops();
+      unsubBuses?.();
+      unsubStops?.();
     };
-  }, [companyID]);
+  }, [companyID, fetchDriversStatus, fetchRoutePlateNumbers]);
 
   useEffect(() => {
-    if (map) {
-      const handleZoomChange = _.debounce(() => setZoom(map.getZoom()), 200);
-      map.addListener("zoom_changed", handleZoomChange);
-      return () => google.maps.event.clearListeners(map, "zoom_changed");
-    }
-  }, [map]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (map) google.maps.event.trigger(map, "resize");
-    };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, [map]);
-
-  const getIdleTime = (bus) => {
-    if (bus.lastUpdated?.toDate) {
-      const lastUpdate = bus.lastUpdated.toDate();
-      const now = new Date();
-      const diffMs = now - lastUpdate;
-      if (diffMs > 0) {
-        const idleMinutes = Math.floor(diffMs / 60000);
-        if (idleMinutes >= 60) {
-          const hours = Math.floor(idleMinutes / 60);
-          const minutes = idleMinutes % 60;
-          return `Not moved for ${hours} hour${hours > 1 ? "s" : ""}${minutes > 0 ? ` ${minutes} min` : ""}`;
+    if (map && busLocations.length && !hasFitBounds.current) {
+      const bounds = new window.google.maps.LatLngBounds();
+      busLocations.forEach((bus) => {
+        if (bus.currentLocation) {
+          bounds.extend({
+            lat: bus.currentLocation.latitude,
+            lng: bus.currentLocation.longitude,
+          });
         }
-        return idleMinutes > 0 ? `Not moved for ${idleMinutes} min` : "Moving";
-      }
+      });
+      busStops.forEach((stop) => {
+        if (stop.geo) {
+          bounds.extend({
+            lat: stop.geo.latitude,
+            lng: stop.geo.longitude,
+          });
+        }
+      });
+      map.fitBounds(bounds);
+      hasFitBounds.current = true;
     }
-    return "Moving";
-  };
+  }, [map, busLocations, busStops]);
 
-  const handleBusClick = useCallback((bus) => setSelectedBus(bus), []);
-  const handleStopClick = useCallback((stop) => setSelectedStop(stop), []);
+  const mapOptions = useMemo(() => ({
+    styles: [
+      { featureType: "poi", stylers: [{ visibility: "off" }] },
+      { featureType: "transit", stylers: [{ visibility: "off" }] },
+      {
+        featureType: "road",
+        elementType: "labels",
+        stylers: [{ visibility: "simplified" }],
+      },
+      { featureType: "administrative", stylers: [{ visibility: "off" }] },
+      { featureType: "landscape", stylers: [{ color: "#f5f5f5" }] },
+      { featureType: "water", stylers: [{ color: "#d6e9f8" }] },
+    ],
+  }), []);
 
-  const mapOptions = useMemo(
-    () => ({
-      styles: [
-        { featureType: "poi", stylers: [{ visibility: "off" }] },
-        { featureType: "transit", stylers: [{ visibility: "off" }] },
-        { featureType: "road", elementType: "labels", stylers: [{ visibility: "simplified" }] },
-        { featureType: "administrative", stylers: [{ visibility: "off" }] },
-        { featureType: "landscape", stylers: [{ color: "#f5f5f5" }] },
-        { featureType: "water", stylers: [{ color: "#d6e9f8" }] },
-      ],
-    }),
-    []
-  );
-
-  if (!isLoaded) return <div className={styles.loadingHalf}>Loading map...</div>;
+  if (!isLoaded || loading) return <div className={styles.loading}>Loading map data...</div>;
 
   return (
     <div className={styles.pageContainer}>
@@ -207,82 +226,75 @@ export default function BusLocationPage() {
           center={center}
           zoom={zoom}
           options={mapOptions}
-          onLoad={setMap}
+          onLoad={(mapInstance) => {
+            setMap(mapInstance);
+            setZoom(mapInstance.getZoom());
+          }}
+          onZoomChanged={() => {
+            if (map) setZoom(map.getZoom());
+          }}
         >
           <TrafficLayer />
+          {busLocations.map((bus) => {
+            const newPos = {
+              lat: bus.currentLocation?.latitude ?? center.lat,
+              lng: bus.currentLocation?.longitude ?? center.lng,
+            };
+            const prevPos = busRefs.current[bus.id] || newPos;
+            calculateBearing(prevPos, newPos);
+            busRefs.current[bus.id] = newPos;
 
-          <MarkerClusterer options={{ gridSize: 60, maxZoom: 16 }}>
-            {(clusterer) =>
-              busLocations.map((bus) => {
-                const newPos = {
-                  lat: bus.currentLocation?.latitude ?? center.lat,
-                  lng: bus.currentLocation?.longitude ?? center.lng,
-                };
-                const prevPos = busRefs.current[bus.id] || newPos;
-                busRefs.current[bus.id] = newPos;
-
-                const size = Math.min(70, Math.max(30, zoom * 3.5));
-
-                return (
-                  <Marker
-                    key={bus.id}
-                    position={newPos}
-                    icon={{
-                      url: "/puj.png",
-                      scaledSize: new window.google.maps.Size(size, size),
-                      anchor: new window.google.maps.Point(size / 2, size / 2),
-                    }}
-                    clusterer={clusterer}
-                    zIndex={2}
-                    onClick={() => handleBusClick(bus)}
-                  />
-                );
-              })
-            }
-          </MarkerClusterer>
-
-          {zoom >= 15 &&
-            busStops.map((stop) => (
+            return (
               <Marker
-                key={`${stop.parentDocId}-${stop.id}`}
-                position={{
-                  lat: stop.geo.latitude,
-                  lng: stop.geo.longitude,
-                }}
-                icon={{
-                  url: "/stop-icon.png",
-                  scaledSize: new window.google.maps.Size(25, 25),
-                }}
-                zIndex={1}
-                onClick={() => handleStopClick(stop)}
+                key={bus.id}
+                position={newPos}
+                icon={
+                  typeof window !== "undefined" && window.google
+                    ? {
+                        url: "/puj.png",
+                        scaledSize: new window.google.maps.Size(BUS_ICON_SIZE, BUS_ICON_SIZE),
+                        anchor: new window.google.maps.Point(BUS_ICON_SIZE / 2, BUS_ICON_SIZE / 2),
+                      }
+                    : undefined
+                }
+                zIndex={2}
+                onClick={() => setSelectedBus(bus)}
               />
-            ))}
-
+            );
+          })}
+          {zoom >= 15 && busStops.map((stop) => (
+            <Marker
+              key={`${stop.parentDocId}-${stop.id}`}
+              position={{ lat: stop.geo.latitude, lng: stop.geo.longitude }}
+              icon={{
+                url: "/stop-icon.png",
+                scaledSize: new window.google.maps.Size(25, 25),
+              }}
+              zIndex={1}
+              onClick={() => setSelectedStop(stop)}
+            />
+          ))}
           {selectedBus && (
             <InfoWindow
               position={busRefs.current[selectedBus.id]}
               onCloseClick={() => setSelectedBus(null)}
             >
               <div>
-                <strong>Driver ID:</strong> {selectedBus.driverID || "N/A"} <br />
-                <strong>Plate Number:</strong> {selectedBus.plateNumber || "N/A"} <br />
-                <strong>Route:</strong> {selectedBus.route || "N/A"} <br />
+                <strong>Driver ID:</strong> {selectedBus.driverID || "N/A"}<br />
+                <strong>Plate Number:</strong> {selectedBus.plateNumber || "N/A"}<br />
+                <strong>Route:</strong> {selectedBus.route || "N/A"}<br />
                 <span style={{ color: "blue" }}>{getIdleTime(selectedBus)}</span>
               </div>
             </InfoWindow>
           )}
-
           {selectedStop && (
             <InfoWindow
-              position={{
-                lat: selectedStop.geo.latitude,
-                lng: selectedStop.geo.longitude,
-              }}
+              position={{ lat: selectedStop.geo.latitude, lng: selectedStop.geo.longitude }}
               onCloseClick={() => setSelectedStop(null)}
             >
               <div>
-                <strong>Location ID:</strong> {selectedStop.locID} <br />
-                <strong>Stop Name:</strong> {selectedStop.name} <br />
+                <strong>Location ID:</strong> {selectedStop.locID}<br />
+                <strong>Stop Name:</strong> {selectedStop.name}
               </div>
             </InfoWindow>
           )}

@@ -15,11 +15,9 @@ import {
   getDownloadURL,
   deleteObject,
 } from "firebase/storage";
-
 import CropImageModal from "../../../../dashboard/crop/CropImageModal";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 import styles from "../../../../ui/dashboard/drivers/driveredit.module.css";
 
 const EditDriverPage = () => {
@@ -43,11 +41,12 @@ const EditDriverPage = () => {
   });
 
   const [newAvatar, setNewAvatar] = useState(null);
-  const [image, setImage] = useState(null); 
-  const [croppedImage, setCroppedImage] = useState(null); 
+  const [image, setImage] = useState(null);
+  const [croppedImage, setCroppedImage] = useState(null);
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Fetch existing driver details
   useEffect(() => {
     const fetchDriver = async () => {
       try {
@@ -72,15 +71,17 @@ const EditDriverPage = () => {
             avatarUrl: data.imageUrl || "/noavatar.png",
           });
         } else {
-          console.error("No such document!");
+          toast.error("Driver not found.");
         }
       } catch (error) {
         console.error("Error fetching driver:", error);
+        toast.error("Failed to fetch driver.");
       }
     };
 
     fetchDriver();
   }, [id]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -90,6 +91,7 @@ const EditDriverPage = () => {
     }));
   };
 
+
   const handleAvatarChange = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -98,6 +100,7 @@ const EditDriverPage = () => {
     }
   };
 
+  // Update avatar preview after cropping
   useEffect(() => {
     if (croppedImage) {
       setNewAvatar(croppedImage);
@@ -108,6 +111,7 @@ const EditDriverPage = () => {
     }
   }, [croppedImage]);
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -134,15 +138,15 @@ const EditDriverPage = () => {
     const driverData = {
       driverID: formData.driverID,
       LicenseNo: formData.LicenseNo,
-      FName: formData.FName,
-      LName: formData.LName,
-      MName: formData.MName,
+      FName: formData.FName.trim(),
+      LName: formData.LName.trim(),
+      MName: formData.MName.trim(),
       Email: formData.Email,
-      Contact: formData.Contact,
-      houseno: formData.houseno,
-      Barangay: formData.Barangay,
-      City: formData.City,
-      Province: formData.Province,
+      Contact: formData.Contact.trim(),
+      houseno: formData.houseno.trim(),
+      Barangay: formData.Barangay.trim(),
+      City: formData.City.trim(),
+      Province: formData.Province.trim(),
       Address: fullAddress,
     };
 
@@ -150,38 +154,45 @@ const EditDriverPage = () => {
       const storage = getStorage();
       const docRef = doc(db, "Drivers", id);
 
+      // Upload new avatar if available
       if (newAvatar) {
         const newImageRef = ref(storage, `drivers/${formData.driverID}_${Date.now()}`);
 
+        // Delete old image from storage
         if (driver.imageUrl && driver.imageUrl !== "/noavatar.png") {
-          try {
-            const oldImageRef = ref(storage, driver.imageUrl);
-            await deleteObject(oldImageRef);
-          } catch (error) {
-            console.warn("Old image deletion failed:", error.message);
+          const match = driver.imageUrl.match(/%2F(.+)\?alt/);
+          if (match && match[1]) {
+            const oldPath = decodeURIComponent(match[1]);
+            const oldImageRef = ref(storage, `drivers/${oldPath}`);
+            try {
+              await deleteObject(oldImageRef);
+            } catch (error) {
+              console.warn("Failed to delete old image:", error.message);
+            }
           }
         }
 
+        // Upload and get new image URL
         const uploadTask = uploadBytesResumable(newImageRef, newAvatar);
         const snapshot = await new Promise((resolve, reject) => {
           uploadTask.on("state_changed", null, reject, () => resolve(uploadTask.snapshot));
         });
-
         const downloadURL = await getDownloadURL(snapshot.ref);
         driverData.imageUrl = downloadURL;
       } else {
         driverData.imageUrl = driver.imageUrl;
       }
 
+      // Save updated data to database
       await updateDoc(docRef, driverData);
 
       toast.success("Driver updated successfully!", { theme: "colored" });
       setTimeout(() => {
         router.push("/dashboard/drivers");
-      }, 2500);
+      }, 2000);
     } catch (error) {
       console.error("Error updating driver:", error);
-      toast.error("Failed to update driver. Please try again.", { theme: "colored" });
+      toast.error("Failed to update driver.");
     } finally {
       setLoading(false);
     }
@@ -197,20 +208,20 @@ const EditDriverPage = () => {
     <div className={styles.container}>
       <h1 className={styles.heading}>Edit Driver</h1>
       <form className={styles.form} onSubmit={handleSubmit}>
+
         <div className={styles.imageContainer}>
-        <Image
-          src={formData.avatarUrl}
-          alt="Avatar"
-          width={130}
-          height={130}
-          className={styles.avatarPreview}
-        />
+          <Image
+            src={formData.avatarUrl}
+            alt="Avatar"
+            width={130}
+            height={130}
+            className={styles.avatarPreview}
+          />
           <input
             type="file"
             accept="image/*"
             onChange={handleAvatarChange}
             id="avatarInput"
-            className={styles.input}
             style={{ display: "none" }}
           />
           <label htmlFor="avatarInput" className={styles.editIcon}>
@@ -218,135 +229,67 @@ const EditDriverPage = () => {
           </label>
         </div>
 
-        {/* Row 1 */}
+        {/* Row 1: ID + License */}
         <div className={styles.row}>
           <div className={styles.col}>
             <label className={styles.label}>Driver ID:</label>
-            <input
-              className={styles.input}
-              type="text"
-              name="driverID"
-              value={formData.driverID}
-              onChange={handleChange}
-              disabled
-            />
+            <input className={styles.input} name="driverID" value={formData.driverID} disabled />
           </div>
           <div className={styles.col}>
             <label className={styles.label}>License No.:</label>
-            <input
-              className={styles.input}
-              type="text"
-              name="LicenseNo"
-              value={formData.LicenseNo}
-              onChange={handleChange}
-              disabled
-            />
+            <input className={styles.input} name="LicenseNo" value={formData.LicenseNo} disabled />
           </div>
         </div>
 
-        {/* Row 2 */}
+        {/* Row 2: Name */}
         <div className={styles.row}>
           <div className={styles.col}>
             <label className={styles.label}>First Name:</label>
-            <input
-              className={styles.input}
-              type="text"
-              name="FName"
-              value={formData.FName}
-              onChange={handleChange}
-            />
+            <input className={styles.input} name="FName" value={formData.FName} onChange={handleChange} />
           </div>
           <div className={styles.col}>
             <label className={styles.label}>Middle Name:</label>
-            <input
-              className={styles.input}
-              type="text"
-              name="MName"
-              value={formData.MName}
-              onChange={handleChange}
-            />
+            <input className={styles.input} name="MName" value={formData.MName} onChange={handleChange} />
           </div>
           <div className={styles.col}>
             <label className={styles.label}>Last Name:</label>
-            <input
-              className={styles.input}
-              type="text"
-              name="LName"
-              value={formData.LName}
-              onChange={handleChange}
-            />
+            <input className={styles.input} name="LName" value={formData.LName} onChange={handleChange} />
           </div>
         </div>
 
-        {/* Row 3 */}
+        {/* Row 3: Email + Contact */}
         <div className={styles.row}>
           <div className={styles.col}>
             <label className={styles.label}>Email:</label>
-            <input
-              className={styles.input}
-              type="email"
-              name="Email"
-              value={formData.Email}
-              onChange={handleChange}
-              disabled
-            />
+            <input className={styles.input} name="Email" value={formData.Email} disabled />
           </div>
           <div className={styles.col}>
             <label className={styles.label}>Contact:</label>
-            <input
-              className={styles.input}
-              type="text"
-              name="Contact"
-              value={formData.Contact}
-              onChange={handleChange}
-            />
+            <input className={styles.input} name="Contact" value={formData.Contact} onChange={handleChange} />
           </div>
         </div>
 
-        {/* Row 4 */}
+        {/* Row 4: Address */}
         <div className={styles.row}>
           <div className={styles.col}>
             <label className={styles.label}>House No.:</label>
-            <input
-              className={styles.input}
-              type="text"
-              name="houseno"
-              value={formData.houseno}
-              onChange={handleChange}
-            />
+            <input className={styles.input} name="houseno" value={formData.houseno} onChange={handleChange} />
           </div>
           <div className={styles.col}>
             <label className={styles.label}>Barangay:</label>
-            <input
-              className={styles.input}
-              type="text"
-              name="Barangay"
-              value={formData.Barangay}
-              onChange={handleChange}
-            />
+            <input className={styles.input} name="Barangay" value={formData.Barangay} onChange={handleChange} />
           </div>
           <div className={styles.col}>
             <label className={styles.label}>City:</label>
-            <input
-              className={styles.input}
-              type="text"
-              name="City"
-              value={formData.City}
-              onChange={handleChange}
-            />
+            <input className={styles.input} name="City" value={formData.City} onChange={handleChange} />
           </div>
           <div className={styles.col}>
             <label className={styles.label}>Province:</label>
-            <input
-              className={styles.input}
-              type="text"
-              name="Province"
-              value={formData.Province}
-              onChange={handleChange}
-            />
+            <input className={styles.input} name="Province" value={formData.Province} onChange={handleChange} />
           </div>
         </div>
 
+        {/* Buttons */}
         <div className={styles.buttons}>
           <button type="button" className={styles.cancel} onClick={handleCancel} disabled={loading}>
             Cancel
@@ -357,6 +300,7 @@ const EditDriverPage = () => {
         </div>
       </form>
 
+      {/* Image crop modal */}
       {cropModalOpen && (
         <CropImageModal
           imageFile={image}
@@ -368,7 +312,7 @@ const EditDriverPage = () => {
         />
       )}
 
-      <ToastContainer position="top-right" autoClose={2500} />
+      <ToastContainer position="top-right" autoClose={2000} />
     </div>
   );
 };

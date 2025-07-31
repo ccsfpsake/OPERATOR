@@ -1,94 +1,60 @@
 "use client";
-/* global Set */
+
 import { useEffect, useState } from "react";
+import React from "react";
 import { useParams } from "next/navigation";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  addDoc,
+  Timestamp,
+} from "firebase/firestore";
 import { db } from "../../../lib/firebaseConfig";
 import styles from "../../../../app/ui/dashboard/history/viewhistory.module.css";
 import Search from "../../../../app/ui/dashboard/search/search";
-import React from "react";
+import EditDailySalesModal from "../EditDailySalesModal";
 
-const DriverHistoryPage = () => {
+const DriverSalesPage = () => {
   const { id: driverID } = useParams();
-  const [driver, setDriver] = useState(null);
-  const [dailyTrips, setDailyTrips] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [expandedDates, setExpandedDates] = useState({});
+  const [allSales, setAllSales] = useState([]);
+  const [selectedSales, setSelectedSales] = useState(null);
+  const [routeInfo, setRouteInfo] = useState({ plateNumber: "", route: "" });
   const [loading, setLoading] = useState(true);
-
-  // 🔹 Format total duration to "X hr Y mins"
-  const formatDuration = (totalMinutes) => {
-    const hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-    return `${hours > 0 ? `${hours} hr${hours > 1 ? "s" : ""} ` : ""}${minutes} min${minutes !== 1 ? "s" : ""}`;
-  };
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [expandedRows, setExpandedRows] = useState({});
+  const [editingSaleId, setEditingSaleId] = useState(null);
 
   useEffect(() => {
-    const companyID = localStorage.getItem("companyID");
-    if (!driverID || !companyID) return;
+    if (!driverID) return;
 
-    const fetchDriverAndTrips = async () => {
+    const fetchAllSales = async () => {
       try {
         setLoading(true);
 
-        const driverQuery = query(
-          collection(db, "Drivers"),
-          where("driverID", "==", driverID),
-          where("companyID", "==", companyID)
-        );
-        const driverSnap = await getDocs(driverQuery);
-        if (!driverSnap.empty) {
-          setDriver(driverSnap.docs[0].data());
+        const salesRef = collection(db, `dailysales/${driverID}/dailysales`);
+        const q = query(salesRef, orderBy("createdAt", "desc"));
+        const querySnapshot = await getDocs(q);
+        const sales = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          data: doc.data(),
+        }));
+        setAllSales(sales);
+        if (sales.length > 0) {
+          setSelectedSales(sales[0]);
         }
 
-        const tripsRef = collection(db, `DriverHistory/${driverID}/Trips`);
-        const tripSnap = await getDocs(tripsRef);
-        const trips = tripSnap.docs.map((doc) => doc.data());
-
-        const grouped = {};
-        trips.forEach((trip) => {
-          if (!trip.createdAt?.toDate) return;
-          const dateObj = trip.createdAt.toDate();
-          const dateKey = dateObj.toISOString().split("T")[0];
-
-          if (!grouped[dateKey]) {
-            grouped[dateKey] = {
-              dateKey,
-              displayDate: dateObj.toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              }),
-              timestamp: dateObj,
-              trips: [],
-              totalPassengers: 0,
-              totalFare: 0,
-              routes: new Set(),
-            };
-          }
-
-          grouped[dateKey].trips.push(trip);
-          grouped[dateKey].totalPassengers += Number(trip.TotalPassengers) || 0;
-          grouped[dateKey].totalFare += Number(trip.fare) || 0;
-
-          const routeLabel = trip.route
-            ? `${trip.route}`
-            : trip.route ?? "Unknown Route";
-          grouped[dateKey].routes.add(routeLabel);
-        });
-
-        const dailyList = Object.values(grouped)
-          .map((day) => ({
-            ...day,
-            routes: [...day.routes],
-            trips: day.trips.sort((a, b) => {
-              const timeA = a.createdAt?.toDate?.().getTime() || 0;
-              const timeB = b.createdAt?.toDate?.().getTime() || 0;
-              return timeA - timeB;
-            }),
-          }))
-          .sort((a, b) => b.timestamp - a.timestamp);
-        setDailyTrips(dailyList);
+        const routeRef = collection(db, "Route");
+        const routeQuery = query(routeRef, where("driverID", "==", driverID));
+        const routeSnap = await getDocs(routeQuery);
+        if (!routeSnap.empty) {
+          const { plateNumber = "", route = "" } = routeSnap.docs[0].data();
+          setRouteInfo({ plateNumber, route });
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -96,59 +62,112 @@ const DriverHistoryPage = () => {
       }
     };
 
-    fetchDriverAndTrips();
+    fetchAllSales();
   }, [driverID]);
 
-  const toggleExpand = (dateKey) => {
-    setExpandedDates((prev) => ({
+  const addNewSalesDocument = async () => {
+    try {
+      const routeRef = collection(db, "Route");
+      const routeQuery = query(routeRef, where("driverID", "==", driverID));
+      const routeSnap = await getDocs(routeQuery);
+
+      let plateNumber = "";
+      let route = "";
+
+      if (!routeSnap.empty) {
+        const data = routeSnap.docs[0].data();
+        plateNumber = data.plateNumber || "";
+        route = data.route || "";
+      }
+
+      const salesRef = collection(db, `dailysales/${driverID}/dailysales`);
+      await addDoc(salesRef, {
+        plateNumber,
+        route,
+        firstDate: "",
+        lastDate: "",
+        tripSales: [],
+        ticketDetails: {},
+        expenses: [],
+        totals: {
+          tripCount: 0,
+          totalTicketCount: 0,
+          totalTicketAmount: 0,
+          totalExpenses: 0,
+          netSales: 0,
+        },
+        createdAt: Timestamp.now(),
+      });
+    } catch (err) {
+      console.error("Error adding sales:", err);
+    }
+  };
+
+  const toggleExpand = (id) => {
+    setExpandedRows((prev) => ({
       ...prev,
-      [dateKey]: !prev[dateKey],
+      [id]: !prev[id],
     }));
   };
 
-  const filteredDailyTrips = dailyTrips.filter((day) => {
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const isDateInRange = (sale) => {
+    if (!startDate || !endDate) return true;
+    const { firstDate, lastDate } = sale.data;
+    if (!firstDate || !lastDate) return false;
+
+    const first = new Date(firstDate);
+    const last = new Date(lastDate);
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    return !(last < start || first > end);
+  };
+
+  const filteredSales = allSales.filter((sale) => {
+    const data = sale.data;
     const searchLower = searchTerm.toLowerCase();
 
-    const matchesDay = 
-      day.displayDate.toLowerCase().includes(searchLower) ||
-      day.totalPassengers.toString().includes(searchLower) ||
-      day.totalFare.toString().includes(searchLower) ||
-      day.routes.some((route) => route?.toLowerCase().includes(searchLower));
+    const matchesSearch =
+      data.firstDate?.toLowerCase().includes(searchLower) ||
+      data.lastDate?.toLowerCase().includes(searchLower) ||
+      (routeInfo.route || "").toLowerCase().includes(searchLower) ||
+      (routeInfo.plateNumber || "").toLowerCase().includes(searchLower) ||
+      data.totals?.tripCount?.toString().includes(searchLower) ||
+      data.totals?.totalTicketCount?.toString().includes(searchLower) ||
+      data.totals?.totalTicketAmount?.toString().includes(searchLower) ||
+      data.totals?.netSales?.toString().includes(searchLower);
 
-    const matchesTrip = day.trips.some((trip) => {
-      const duration = `${Math.round(Number(trip.tripDuration))} min`;
-      const fare = `₱${Number(trip.fare || 0).toLocaleString()}`;
-      const originDest = `${trip.origin || ""} ${trip.destination || ""}`.toLowerCase();
-      const route = (trip.route || "").toLowerCase();
-
-      return (
-        (trip.createdAt?.toDate().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }) || "").toLowerCase().includes(searchLower) ||
-        originDest.includes(searchLower) ||
-        route.includes(searchLower) ||
-        (trip.busNum || "").toLowerCase().includes(searchLower) ||
-        duration.toLowerCase().includes(searchLower) ||
-        (trip.TotalPassengers || "").toString().includes(searchLower) ||
-        fare.toLowerCase().includes(searchLower)
-      );
-    });
-
-    return matchesDay || matchesTrip;
+    return matchesSearch && isDateInRange(sale);
   });
-
 
   return (
     <div className={styles.container}>
       <div className={styles.top}>
-        {driver ? (
-          <h3>
-            Driver: {driver.FName} {driver.LName}
-          </h3>
-        ) : (
-          <h3>Loading driver information...</h3>
-        )}
+        <div className={styles.dateRangeWrapper}>
+          <input
+            className={styles.select}
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <span style={{ margin: "0 8px" }}>-</span>
+          <input
+            className={styles.select}
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </div>
         <Search
           placeholder="Search..."
           value={searchTerm}
@@ -156,108 +175,140 @@ const DriverHistoryPage = () => {
         />
       </div>
 
-      <div className={styles.tableWrapper}>
-        <table className={styles.table}>
-          <thead>
+      <table className={styles.table}>
+        <thead>
+          <tr>
+            <th>Date Range</th>
+            <th>Plate Number</th>
+            <th>Route</th>
+            <th>Trip Count</th>
+            <th>Total Ticket</th>
+            <th>Total Fare</th>
+            <th>Total Expenses</th>
+            <th>Net Sales</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {loading ? (
             <tr>
-              <th>Date</th>
-              <th>Route</th>
-              <th>Plate No.</th>
-              <th>Trip Duration</th>
-              <th>Total Passengers</th>
-              <th>Total Fare</th>
+              <td colSpan={9} style={{ textAlign: "center" }}>
+                Loading sales data...
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={6} className={styles.noData}>
-                  Loading...
-                </td>
-              </tr>
-            ) : filteredDailyTrips.length === 0 ? (
-              <tr>
-                <td colSpan={6} className={styles.noData}>
-                  No trip history found.
-                </td>
-              </tr>
-            ) : (
-              filteredDailyTrips.map((day, index) => {
-                const bgClass = index % 2 === 0 ? styles.bgDay1 : styles.bgDay2;
-                const isExpanded = expandedDates[day.dateKey];
+          ) : filteredSales.length === 0 ? (
+            <tr>
+              <td colSpan={9} style={{ textAlign: "center" }}>
+                No data found.
+              </td>
+            </tr>
+          ) : (
+            filteredSales.map((sale) => {
+              const {
+                firstDate,
+                lastDate,
+                tripSales = [],
+                ticketDetails = {},
+                expenses = [],
+                totals = {},
+              } = sale.data;
 
-                return (
-                  <React.Fragment key={day.dateKey}>
-                    <tr
-                      className={bgClass}
-                      onClick={() => toggleExpand(day.dateKey)}
-                      style={{ cursor: "pointer" }}
-                    >
-                      <td>
-                        <div className={styles.dateCell}>
-                          <span className={styles.arrow}>
-                            {isExpanded ? "▼" : "►"}
-                          </span>
-                          <span>{day.displayDate}</span>
-                        </div>
-                      </td>
-                      <td style={{ textAlign: "left", paddingLeft: "25px", fontStyle: "italic" }}>
-                        {day.routes.join(", ")}
-                      </td>
-                      <td></td>
-                      <td style={{ textAlign: "center" }}>
-                        {formatDuration(
-                          day.trips.reduce(
-                            (sum, trip) => sum + (Number(trip.tripDuration) || 0),
-                            0
-                          )
-                        )}
-                      </td>
-                      <td style={{ textAlign: "right" }}>{day.totalPassengers}</td>
-                      <td style={{ textAlign: "right" }}>
-                        ₱{day.totalFare.toLocaleString()}
-                      </td>
-                    </tr>
+              const isExpanded = expandedRows[sale.id];
 
-                    {isExpanded &&
-                      day.trips.map((trip, i) => (
-                        <tr key={`${day.dateKey}-${i}`} className={styles.subRow}>
-                          <td style={{ paddingLeft: "25px", fontStyle: "italic" }}>
-                            {trip.createdAt?.toDate().toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            }) ?? "N/A"}
-                          </td>
-                          <td style={{ fontStyle: "italic" }}>
-                            {trip.origin && trip.destination
-                              ? `${trip.origin} - ${trip.destination}`
-                              : trip.route ?? ""}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {trip.busNum ?? "N/A"}
-                          </td>
-                          <td style={{ textAlign: "right" }}>
-                            {trip.tripDuration
-                              ? `${Math.round(Number(trip.tripDuration))} mins`
-                              : "N/A"}
-                          </td>
-                          <td style={{ textAlign: "right" }}>
-                            {trip.TotalPassengers ?? "N/A"}
-                          </td>
-                          <td style={{ textAlign: "right" }}>
-                            ₱{Number(trip.fare || 0).toLocaleString()}
-                          </td>
-                        </tr>
-                      ))}
-                  </React.Fragment>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+              return (
+                <React.Fragment key={sale.id}>
+                  <tr
+                    className={isExpanded ? styles.expandedRow : ""}
+                    style={{ cursor: "pointer" }}
+                    onClick={() => toggleExpand(sale.id)}
+                  >
+                    <td>
+                      <span className={styles.arrow}>
+                        {isExpanded ? "▼" : "►"}
+                      </span>{" "}
+                      {formatDate(firstDate)} - {formatDate(lastDate)}
+                    </td>
+                    <td>{sale.data.plateNumber || "N/A"}</td>
+                    <td>{sale.data.route || "N/A"}</td>
+                    <td>{totals.tripCount ?? "N/A"}</td>
+                    <td>{totals.totalTicketCount ?? 0}</td>
+                    <td>₱{totals.totalTicketAmount?.toLocaleString() ?? "0"}</td>
+                    <td>₱{totals.totalExpenses?.toLocaleString() ?? "0"}</td>
+                    <td>₱{totals.netSales?.toLocaleString() ?? "0"}</td>
+                    <td>
+                      <button
+                        className={styles.editBtn}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingSaleId(sale.id);
+                        }}
+                      >
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+
+                  {isExpanded && (
+                    <>
+                      <tr className={styles.subRow}>
+                        <td colSpan={9}>
+                          <strong>Trip Sales</strong>
+                          <ul>
+                            {tripSales.map((r, i) => (
+                              <li key={i}>
+                                {r.route} — ₱{r.amount} ({r.count} trips)
+                              </li>
+                            ))}
+                          </ul>
+                        </td>
+                      </tr>
+
+                      <tr className={styles.subRow}>
+                        <td colSpan={9}>
+                          <strong>Ticket Details</strong>
+                          <ul>
+                            {Object.entries(ticketDetails).map(
+                              ([type, detail]) => (
+                                <li key={type}>
+                                  {type}: ₱{detail.amount} ({detail.count} tickets)
+                                </li>
+                              )
+                            )}
+                          </ul>
+                        </td>
+                      </tr>
+
+                      <tr className={styles.subRow}>
+                        <td colSpan={9}>
+                          <strong>Expenses</strong>
+                          <ul>
+                            {expenses.map((e, i) => (
+                              <li key={i}>
+                                {e.name}: ₱{e.cost}
+                              </li>
+                            ))}
+                          </ul>
+                        </td>
+                      </tr>
+                    </>
+                  )}
+                </React.Fragment>
+              );
+            })
+          )}
+        </tbody>
+      </table>
+
+      {editingSaleId && (
+        <EditDailySalesModal
+          saleId={editingSaleId}
+          saleData={allSales.find((s) => s.id === editingSaleId)?.data}
+          driverID={driverID}
+          onClose={() => setEditingSaleId(null)}
+        />
+      )}
     </div>
   );
 };
 
-export default DriverHistoryPage;
+export default DriverSalesPage;

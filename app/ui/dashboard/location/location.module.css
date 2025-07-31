@@ -28,7 +28,7 @@
 .searchContainer {
   padding: 10px;
   display: flex;
-justify-content: flex-end;
+  justify-content: flex-end;
   flex-wrap: wrap;
   gap: 10px;
   border-radius: 10px;
@@ -42,7 +42,6 @@ justify-content: flex-end;
   outline: none;
   transition: border-color 0.3s;
   box-sizing: border-box;
-  width: 100%;
   max-width: 300px;
   width: fit-content;
 }
@@ -56,12 +55,13 @@ justify-content: flex-end;
   background-color: var(--bgSoft);
   padding: 2rem;
   border-radius: 15px;
-  margin: 1rem auto;
+  margin: 0 auto 1rem auto;
   width: 100%;
   border: 1px solid #4e97da;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   font-family: Arial, Helvetica, sans-serif;
   box-sizing: border-box;
+  flex: 2;
 }
 
 .statusReportTitle {
@@ -120,10 +120,12 @@ justify-content: flex-end;
   cursor: pointer;
   white-space: nowrap;
 }
+
 .idleTableWrapper {
   width: 100%;
   overflow-x: auto;
 }
+
 .noData {
   text-align: center;
   font-size: 1rem;
@@ -132,24 +134,11 @@ justify-content: flex-end;
 }
 
 .statusTable {
-  min-width: 600px; 
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.tableScroll {
-  overflow-x: auto;
-  display: block;
-  width: 100%;
-}
-
-.statusTable {
-  width: 100%;
   min-width: 600px;
+  width: 100%;
   border-collapse: collapse;
   border: 1px solid #ccc;
 }
-
 
 .statusTable thead {
   background: #1976d2;
@@ -205,24 +194,42 @@ justify-content: flex-end;
 }
 
 .chatWrapper {
-  width: 100%;
+  flex: 1;
+  min-width: 280px;
   height: 50%;
   -webkit-overflow-scrolling: touch;
 }
 
+.statusContentWrapper {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+/* Table scroll only, not full container */
+.tableWrapper {
+  overflow-x: auto;
+  width: 100%;
+}
+
+/* Pagination */
 .pagination {
-  padding: 10px;
+  margin-top: 15px;
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 10px;
 }
 
 .pagination button {
-  padding: 5px 10px;
+  padding: 8px 12px;
+  font-size: 14px;
   cursor: pointer;
   border: none;
-  border-radius: 4px;
+  background: #f1f1f1;
+  border-radius: 5px;
 }
 
 .pagination button:hover {
@@ -230,10 +237,35 @@ justify-content: flex-end;
   color: white;
 }
 
-/* MEDIA QUERIES */
-@media (max-width: 768px) {
-  .mapContainer,
+/* ========================
+   📱 Media Queries 
+======================== */
+
+/* Tablets (768px to 1024px) */
+@media (max-width: 1024px) {
   .statusReportContainer,
+  .mapContainer,
+  .chatContainer {
+    padding: 1.5rem;
+  }
+
+  .chatMessages {
+    height: 170px;
+  }
+
+  .statusTable {
+    font-size: 13px;
+  }
+}
+
+/* Small tablets and large phones */
+@media (max-width: 768px) {
+  .statusContentWrapper {
+    flex-direction: column;
+  }
+
+  .statusReportContainer,
+  .mapContainer,
   .chatContainer {
     padding: 1rem;
   }
@@ -245,8 +277,13 @@ justify-content: flex-end;
   .statusTable {
     font-size: 12px;
   }
+
+  .statusReportContainer {
+    margin-bottom: 0;
+  }
 }
 
+/* Mobile */
 @media (max-width: 480px) {
   .chatInputBox {
     flex-direction: column;
@@ -285,12 +322,9 @@ justify-content: flex-end;
   .statusTable {
     font-size: 11px;
   }
-
-  .tableWrapper {
-    overflow-x: auto;
-  }
 }
 
+/* Smaller Phones */
 @media (max-width: 360px) {
   .chatMessages {
     height: 130px;
@@ -321,6 +355,7 @@ justify-content: flex-end;
   }
 }
 
+/* Extra Small Screens */
 @media (max-width: 320px) {
   .mapAndChatWrapper,
   .chatWrapper,
@@ -370,9 +405,5 @@ justify-content: flex-end;
   .userImage {
     width: 28px;
     height: 28px;
-  }
-
-  .tableWrapper {
-    overflow-x: auto;
   }
 }

@@ -1,0 +1,419 @@
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal {
+  background: #fff;
+  padding: 2rem 1.5rem;
+  border-radius: 0.75rem;
+  width: 100%;
+  max-width: 650px;
+  max-height: 90vh;
+  overflow-y: auto;
+  font-family: 'Segoe UI', sans-serif;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  animation: fadeInScale 0.25s ease-out;
+  scroll-behavior: smooth;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.buttons button {
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  border-radius: 10px;
+  border: none;
+  transition: all 0.3s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.confirmModal p {
+  margin-bottom: 10px;
+}
+
+.addButton {
+  background-color: #1b69df;
+  color: white;
+}
+
+.addButton:hover {
+  background-color: #0d47a1;
+}
+
+.cancelButton {
+  background: #a8a7a7;
+  color: white;
+}
+
+.cancelButton:hover {
+  background: #777777;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.invalidInput {
+  border: 1px solid red;
+}
+
+.tooltip {
+  color: red;
+  font-size: 0.75rem;
+  margin-top: 2px;
+}
+
+.confirmModal {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 1rem;
+  max-width: 90%;
+  box-sizing: border-box;
+}
+
+@keyframes fadeInScale {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.h2, .h3 {
+  color: #1e3a8a;
+  font-weight: 700;
+}
+
+.h2 {
+  font-size: 1.75rem;
+  margin-bottom: 1rem;
+}
+
+.h3 {
+  font-size: 1.25rem;
+  margin: 0.75rem 0;
+  padding: 0.5rem 0;
+  border-top: 1px solid #e9eaef;
+}
+
+.confirmBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 1rem;
+}
+
+.confirmBox {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  text-align: center;
+  width: 100%;
+}
+
+.noData {
+  text-align: center;
+  font-size: 1rem;
+  color: #888888;
+  padding: 20px 0;
+}
+
+.routeSpan {
+  display: block;
+  font-weight: 500;
+  color: #374151;
+  max-width: 100%;
+  word-wrap: break-word;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  color: #374151;
+}
+
+.formGroup input,
+.formGroup select,
+.ticketRow input,
+.tripSales input,
+.tripItem input {
+  padding: 0.5rem 0.625rem;
+  font-size: 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  background: #f9fafb;
+  transition: border-color 0.2s ease;
+  outline: none;
+  width: 100%;
+}
+
+.formGroup input:focus,
+.formGroup select:focus {
+  border-color: #3b82f6;
+}
+
+.input:invalid {
+  border-color: #ef4444;
+  background: #fef2f2;
+}
+
+.driverDateRow {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ticketRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.ticketRow span {
+  color: #111827;
+  font-weight: 500;
+}
+
+.tripSales {
+  display: grid;
+  grid-template-columns: 2.4fr 0.7fr 1fr;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+}
+
+.tripSales span {
+  color: #111827;
+  font-weight: 500;
+}
+
+
+.summary {
+  margin-top: 1.5rem;
+  color: #111827;
+  font-size: 0.875rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.summary p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+    justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.actions button {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.875rem;
+  border-radius: 0.375rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s, opacity 0.2s;
+  width: 100%;
+}
+
+.actions button:hover,
+.actions button:focus-visible {
+  opacity: 0.9;
+}
+
+.actions button:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.saveBtn {
+  background: #3b82f6;
+  color: #fff;
+}
+
+.addExpenseBtn {
+  padding: 0.5rem 0.875rem;
+  font-size: 0.8125rem;
+  background: #f3f4f6;
+  color: #111827;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  width: 100%;
+}
+
+.addExpenseBtn:hover {
+  background: #e5e7eb;
+}
+
+.loadTripsBtn {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.875rem;
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.loadTripsBtn:hover {
+  background: #005dc1;
+}
+.readonlyInput {
+  background-color: #f1f1f1;
+  border: 1px solid #ccc;
+  color: #555;
+}
+
+/* Media Queries */
+@media (min-width: 480px) {
+  .buttons {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .driverDateRow {
+    flex-direction: row;
+  }
+
+  .ticketRow {
+    grid-template-columns: 1.3fr 0.7fr 1fr 1fr;
+  }
+
+  .tripItem {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .actions {
+    flex-direction: row;
+  }
+
+  .actions button,
+  .addExpenseBtn,
+  .loadTripsBtn {
+    width: auto;
+  }
+}
+/* Responsive Fixes for <480px screens */
+@media (max-width: 479px) {
+  .driverDateRow {
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  .buttons,
+  .actions {
+    flex-direction: row;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    justify-content: space-between;
+  }
+
+  .ticketRow,
+  .tripSales {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    margin-bottom: 0%;
+  }
+
+  .tripItem {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .actions button,
+  .addExpenseBtn,
+  .loadTripsBtn {
+    flex: 1;
+    min-width: 100px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+  }
+
+  .addExpenseBtn{
+      width: 70%;}
+  .confirmBox {
+    padding: 1rem;
+  }
+
+  .formGroup input,
+  .formGroup select {
+    font-size: 0.875rem;
+    padding: 0.4rem 0.6rem;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+
+  .h2 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .h3 {
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .summary p {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}

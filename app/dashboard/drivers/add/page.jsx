@@ -11,9 +11,7 @@ import {
   doc,
   setDoc,
 } from "firebase/firestore";
-import {
-  createUserWithEmailAndPassword,
-} from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import {
   getStorage,
   ref,
@@ -25,7 +23,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Image from "next/image";
 import styles from "../../../ui/dashboard/drivers/adddriver.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import CropImageModal from "../../..//dashboard/crop/CropImageModal";
 import { secondaryAuth } from "../../../lib/secondaryFirebase";
 
@@ -33,8 +31,7 @@ const capitalizeFirstLetter = (str) =>
   str
     .split(" ")
     .map(
-      (word) =>
-        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
     )
     .join(" ");
 
@@ -51,13 +48,10 @@ const generateDriverID = async (companyID) => {
   const snapshot = await getDocs(q);
 
   if (snapshot.empty) {
-    throw new Error(
-      "Company code not found for companyID: " + companyID
-    );
+    throw new Error("Company code not found for companyID: " + companyID);
   }
 
-  const companyCode =
-    snapshot.docs[0].data().companyCode || "UNK";
+  const companyCode = snapshot.docs[0].data().companyCode || "UNK";
   const prefix = `${companyCode}-${currentYear}-`;
 
   const driversRef = collection(db, "Drivers");
@@ -85,16 +79,23 @@ const AddDriverPage = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [formData, setFormData] = useState(null);
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setCropModalOpen(true);
+    }
+  };
 
-    const formData = new FormData(e.target);
+  const handleSubmit = async () => {
     const email = formData.get("Email");
     const contact = formData.get("Contact");
-
     const companyID = localStorage.getItem("companyID");
+
     if (!companyID) {
       setError("Company ID not found. Please login again.");
       return;
@@ -110,10 +111,18 @@ const AddDriverPage = () => {
       return;
     }
 
-    const emailRegex =
-      /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     if (!emailRegex.test(email)) {
       setError("Please enter a valid email address.");
+      return;
+    }
+
+    if (!croppedImage) {
+      toast.error("Please upload and crop an image before submitting.", {
+        autoClose: 2000,
+        theme: "colored",
+      });
+      setLoading(false);
       return;
     }
 
@@ -124,35 +133,23 @@ const AddDriverPage = () => {
       const driverID = await generateDriverID(companyID);
 
       const driverRef = collection(db, "Drivers");
-      const querySnapshot = await getDocs(
-        query(driverRef, where("driverID", "==", driverID))
-      );
 
-      if (!querySnapshot.empty) {
-        toast.error("Driver ID already exists. Try again.", {
-          position: "top-right",
-          autoClose: 5000,
-          theme: "colored",
-        });
+      const idCheck = await getDocs(query(driverRef, where("driverID", "==", driverID)));
+      if (!idCheck.empty) {
+        toast.error("Driver ID already exists.", { autoClose: 2000, theme: "colored" });
         setLoading(false);
         return;
       }
 
-      const contactQuery = await getDocs(
-        query(driverRef, where("Contact", "==", contact))
-      );
-      if (!contactQuery.empty) {
-        toast.error("Contact already used.", {
-          position: "top-right",
-          autoClose: 5000,
-          theme: "colored",
-        });
+      const contactCheck = await getDocs(query(driverRef, where("Contact", "==", contact)));
+      if (!contactCheck.empty) {
+        toast.error("Contact already used.", { autoClose: 2000, theme: "colored" });
         setLoading(false);
         return;
       }
+
       const otp = generateOTP();
       await createUserWithEmailAndPassword(secondaryAuth, email, otp);
-
 
       const driverData = {
         driverID,
@@ -177,9 +174,7 @@ const AddDriverPage = () => {
 
         await fetch("/api/send-email", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             to: email,
             type: "driver_account_creation",
@@ -188,49 +183,33 @@ const AddDriverPage = () => {
           }),
         });
 
-        toast.success("Driver added and email sent.", {
-          theme: "colored",
-        });
-
+        toast.success("Driver added and email sent.", { autoClose: 2000, theme: "colored" });
         setTimeout(() => {
           setLoading(false);
           router.push("/dashboard/drivers");
         }, 2000);
       };
 
-      if (croppedImage) {
-        const storage = getStorage();
-        const imageRef = ref(
-          storage,
-          "drivers/" + Date.now() + ".jpg"
-        );
-        const uploadTask = uploadBytesResumable(imageRef, croppedImage);
+      const storage = getStorage();
+      const imageRef = ref(storage, "drivers/" + Date.now() + ".jpg");
+      const uploadTask = uploadBytesResumable(imageRef, croppedImage);
 
-        uploadTask.on(
-          "state_changed",
-          null,
-          (error) => {
-            console.error("Upload error:", error);
-            setError("Error uploading image.");
-            setLoading(false);
-          },
-          async () => {
-            const imageUrl = await getDownloadURL(
-              uploadTask.snapshot.ref
-            );
-            await saveDriverData(imageUrl);
-          }
-        );
-      } else {
-        await saveDriverData();
-      }
+      uploadTask.on(
+        "state_changed",
+        null,
+        (err) => {
+          console.error("Upload error:", err);
+          setError("Error uploading image.");
+          setLoading(false);
+        },
+        async () => {
+          const imageUrl = await getDownloadURL(uploadTask.snapshot.ref);
+          await saveDriverData(imageUrl);
+        }
+      );
     } catch (error) {
       if (error.code === "auth/email-already-in-use") {
-        toast.error("Email already used.", {
-          position: "top-right",
-          autoClose: 5000,
-          theme: "colored",
-        });
+        toast.error("Email already used.", { autoClose: 2000, theme: "colored" });
       } else {
         console.error("Driver error:", error);
         setError("Failed to add driver.");
@@ -239,138 +218,74 @@ const AddDriverPage = () => {
     }
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImage(file);
-      setCropModalOpen(true);
-    }
+  const handlePreSubmit = (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    setFormData(fd);
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirm = () => {
+    setShowConfirmModal(false);
+    handleSubmit();
+  };
+
+  const handleCancel = () => {
+    setShowConfirmModal(false);
   };
 
   return (
     <div className={styles.container}>
       <div className={styles.imageContainer}>
         {croppedImage ? (
-          <Image
-            src={URL.createObjectURL(croppedImage)}
-            alt="Driver Image"
-            width={150}
-            height={150}
-            className={styles.driverImage}
-          />
+          <Image src={URL.createObjectURL(croppedImage)} alt="Driver Image" width={150} height={150} className={styles.driverImage} />
         ) : (
-          <Image
-            src="/noavatar.png"
-            alt="Driver Image"
-            width={150}
-            height={150}
-            className={styles.driverImage}
-          />
+          <Image src="/noavatar.png" alt="Driver Image" width={150} height={150} className={styles.driverImage} />
         )}
-        <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageChange}
-          className={styles.imageInput}
-          id="fileInput"
-          required
-        />
-        <label htmlFor="fileInput" className={styles.imageLabel}>
-          Choose Image
-        </label>
+        <input type="file" accept="image/*" onChange={handleImageChange} className={styles.imageInput} id="fileInput" />
+        <label htmlFor="fileInput" className={styles.imageLabel}>Choose Image</label>
       </div>
 
-      <form onSubmit={handleSubmit} className={styles.form}>
+      <form onSubmit={handlePreSubmit} className={styles.form}>
         <div className={styles.row}>
-          <input
-            type="text"
-            placeholder="License No."
-            name="LicenseNo"
-            required
-          />
+          <input type="text" placeholder="License No." name="LicenseNo" required />
         </div>
         <div className={styles.row}>
-          <input
-            type="text"
-            placeholder="First Name"
-            name="FName"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Middle Name"
-            name="MName"
-          />
-          <input
-            type="text"
-            placeholder="Last Name"
-            name="LName"
-            required
-          />
+          <input type="text" placeholder="First Name" name="FName" required />
+          <input type="text" placeholder="Middle Name" name="MName" />
+          <input type="text" placeholder="Last Name" name="LName" required />
         </div>
         <div className={styles.row}>
-          <input
-            type="tel"
-            placeholder="Contact No."
-            name="Contact"
-            required
-          />
-          <input
-            type="email"
-            placeholder="Email"
-            name="Email"
-            required
-          />
+          <input type="tel" placeholder="Contact No." name="Contact" required />
+          <input type="email" placeholder="Email" name="Email" required />
         </div>
         <div className={styles.row}>
-          <input
-            type="text"
-            placeholder="House Number"
-            name="houseno"
-          />
-          <input
-            type="text"
-            placeholder="Barangay"
-            name="Barangay"
-          />
-          <input
-            type="text"
-            placeholder="City"
-            name="City"
-            required
-          />
-          <input
-            type="text"
-            placeholder="Province"
-            name="Province"
-            required
-          />
+          <input type="text" placeholder="House Number" name="houseno" />
+          <input type="text" placeholder="Barangay" name="Barangay" />
+          <input type="text" placeholder="City" name="City" required />
+          <input type="text" placeholder="Province" name="Province" required />
         </div>
         {error && <p className={styles.error}>{error}</p>}
-
         <div className={styles.buttons}>
-          <button
-            type="button"
-            className={styles.cancelButton}
-            onClick={() => router.push("/dashboard/drivers")}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            className={styles.addButton}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <FontAwesomeIcon icon={faSpinner} spin /> Saving...
-              </>
-            ) : (
-              "Save"
-            )}
+          <button type="button" className={styles.cancelButton} onClick={() => router.push("/dashboard/drivers")}>Cancel</button>
+          <button type="submit" className={styles.addButton} disabled={loading}>
+            {loading ? <><FontAwesomeIcon icon={faSpinner} spin /> Saving...</> : "Save"}
           </button>
         </div>
       </form>
+
+      {showConfirmModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.confirmModal}>
+            <FontAwesomeIcon icon={faQuestionCircle} size="2x" style={{ marginBottom: "10px", color: "#4a90e2" }} />
+            <p>Are you sure you want to add this driver?</p>
+            <div className={styles.buttons}>
+              <button onClick={handleCancel} className={styles.cancelButton}>Cancel</button>
+              <button onClick={handleConfirm} className={styles.addButton}>Yes</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {cropModalOpen && (
         <CropImageModal
@@ -383,7 +298,7 @@ const AddDriverPage = () => {
         />
       )}
 
-      <ToastContainer position="top-right" autoClose={5000} />
+      <ToastContainer position="top-right" autoClose={2000} theme="colored" />
     </div>
   );
 };

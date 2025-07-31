@@ -221,14 +221,14 @@ useEffect(() => {
             <div className={styles.reportInfoContainer}>
               <div className={styles.reportText}>
                 <h3>Plate Number: {selectedReport.busPlateNumber}</h3>
+                 <p>
+                  <strong>Date:</strong> {formatDate(selectedReport.createdAt)}
+                </p>
                 <p>
                   <strong>Type:</strong> {selectedReport.reportType}
                 </p>
                 <p>
                   <strong>Description:</strong> {selectedReport.description}
-                </p>
-                <p>
-                  <strong>Date:</strong> {formatDate(selectedReport.createdAt)}
                 </p>
               </div>
               {selectedReport.imageUrl && (
@@ -237,8 +237,8 @@ useEffect(() => {
                 src={selectedReport.imageUrl}
                 alt="Report"
                 className={styles.fullMedia}
-                width={800} 
-                height={600} 
+                width={200}
+                height={220}
                 onClick={() => {
                   setModalSrc(selectedReport.imageUrl);
                   setModalType("image");

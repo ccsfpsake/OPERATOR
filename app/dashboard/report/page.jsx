@@ -303,9 +303,9 @@ const OperatorReportPage = () => {
         <div className={styles.reportInfoContainer}>
           <div className={styles.reportText}>
             <h3>Plate No: {selectedReport.busPlateNumber}</h3>
+            <p><strong>Date:</strong> {formatDate(selectedReport.createdAt)}</p>
             <p><strong>Type:</strong> {selectedReport.reportType}</p>
             <p><strong>Description:</strong> {selectedReport.description}</p>
-            <p><strong>Date:</strong> {formatDate(selectedReport.createdAt)}</p>
           </div>
           {selectedReport.imageUrl && (
             <div className={styles.reportImage}>
@@ -314,7 +314,7 @@ const OperatorReportPage = () => {
                 alt="Report"
                 className={styles.fullMedia}
                 width={200}
-                height={120}
+                height={220}
                 onClick={() => {
                   setModalSrc(selectedReport.imageUrl);
                   setModalType("image");
