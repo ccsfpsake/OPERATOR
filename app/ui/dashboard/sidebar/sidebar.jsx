@@ -83,8 +83,9 @@ const Sidebar = ({ isSidebarOpen, toggleSidebar }) => {
   const [hasIdleBuses, setHasIdleBuses] = useState(false);
 
   const isAtCityCollege = (location) => {
-    const targetLat = 15.06137;
-    const targetLng = 120.643928;
+    const targetLat = 15.05871;
+    const targetLng = 120.64442;
+    
     const threshold = 0.0002;
     if (!location) return false;
     const latDiff = Math.abs(location.latitude - targetLat);

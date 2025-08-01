@@ -33,8 +33,8 @@ const calculateBearing = (prevPos, newPos) => {
 };
 
 const isAtCityCollege = (bus) => {
-  const targetLat = 15.06137;
-  const targetLng = 120.643928;
+  const targetLat = 15.05871;
+  const targetLng = 120.64442;
   const threshold = 0.0002;
   if (!bus.currentLocation) return false;
   const latDiff = Math.abs(bus.currentLocation.latitude - targetLat);
