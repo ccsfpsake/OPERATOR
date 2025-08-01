@@ -233,18 +233,27 @@ export default function BusLocationPage() {
         ...bus,
         idle: getIdleTime(bus),
       }))
-      .filter((bus) => {
-        if (typeof bus.idle !== "string") return false;
-      const match = bus.idle.match(/Not moved for (?:(\d+) hour(?:s)? )?(\d+) min/);
-      if (match) {
-        const hours = parseInt(match[1] || "0", 10);
-        const minutes = parseInt(match[2], 10);
-        const totalMinutes = hours * 60 + minutes;
-        return totalMinutes >= 3;
-      }
+.filter((bus) => {
+  if (typeof bus.idle !== "string") return false;
 
-        return false;
-      });
+  const match = bus.idle.match(/Not moved for (?:(\d+) hour(?:s)? )?(\d+) min/);
+  if (match) {
+    const hours = parseInt(match[1] || "0", 10);
+    const minutes = parseInt(match[2], 10);
+    const totalMinutes = hours * 60 + minutes;
+
+    // ✅ Only show if at CCSFP-C3 and idle for 10+ mins
+    if (isAtCityCollege(bus)) {
+      return totalMinutes >= 10;
+    }
+
+    // ✅ Show all other buses if idle for 3+ mins
+    return totalMinutes >= 3;
+  }
+
+  return false;
+});
+
   }, [busLocations, refreshTrigger]);
 
 
