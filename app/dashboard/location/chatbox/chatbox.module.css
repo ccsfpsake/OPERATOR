@@ -3,13 +3,13 @@
   padding: 2rem;
   border-radius: 15px;
   margin: 0 auto 1rem auto;
-
   width: 100%;
   border: 1px solid #4e97da;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   font-family: Arial, Helvetica, sans-serif;
   box-sizing: border-box;
 }
+
 .noData {
   text-align: center;
   font-size: 1rem;
