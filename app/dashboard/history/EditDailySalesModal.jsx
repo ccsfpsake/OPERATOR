@@ -93,30 +93,19 @@ const EditDailySalesModal = ({ onClose, saleData, saleId, driverID }) => {
 
   const isFormValid = () => {
     if (!firstDate || !lastDate) return false;
+
+    for (const type of ticketTypes) {
+      const details = ticketDetails[type];
+      if (!details || !details.count || !details.amount) return false;
+      if (isNaN(parseNumber(details.count)) || isNaN(parseNumber(details.amount)))
+        return false;
+    }
+
+    for (const { amount } of tripSales) {
+      if (amount === "" || isNaN(parseNumber(amount))) return false;
+    }
+
     return true;
-  };
-
-  const normalizeTrips = (trips) =>
-    trips.map((t) => ({
-      route: t.route || "",
-      count: parseInt(t.count) || 0,
-      amount: parseNumber(t.amount),
-    }));
-
-  const normalizeExpenses = (exps) =>
-    exps.map((e) => ({
-      name: e.name.trim(),
-      cost: parseNumber(e.cost),
-    }));
-
-  const normalizeTicketDetails = (details) => {
-    const result = {};
-    ticketTypes.forEach((type) => {
-      const count = parseInt(details[type]?.count) || 0;
-      const amount = parseNumber(details[type]?.amount);
-      result[type] = { count, amount };
-    });
-    return result;
   };
 
   const handleUpdate = async () => {
@@ -128,20 +117,25 @@ const EditDailySalesModal = ({ onClose, saleData, saleId, driverID }) => {
       return;
     }
 
-    const normalizedTicketDetails = normalizeTicketDetails(ticketDetails);
-    const normalizedTripSales = normalizeTrips(tripSales);
-    const normalizedExpenses = normalizeExpenses(expenses);
+    const normalizedTripSales = tripSales.map(({ route, count, amount }) => ({
+      route,
+      count,
+      amount: parseNumber(amount),
+    }));
 
-    const originalTrips = normalizeTrips(saleData.tripSales || []);
-    const originalExpenses = normalizeExpenses(saleData.expenses || []);
-    const originalTicketDetails = normalizeTicketDetails(saleData.ticketDetails || {});
+    const normalizedExpenses = expenses
+      .filter((e) => e.name.trim() && parseNumber(e.cost))
+      .map((e) => ({
+        name: e.name.trim(),
+        cost: parseNumber(e.cost),
+      }));
 
     const hasChanges =
       firstDate !== saleData.firstDate ||
       lastDate !== saleData.lastDate ||
-      JSON.stringify(normalizedTicketDetails) !== JSON.stringify(originalTicketDetails) ||
-      JSON.stringify(normalizedTripSales) !== JSON.stringify(originalTrips) ||
-      JSON.stringify(normalizedExpenses) !== JSON.stringify(originalExpenses);
+      JSON.stringify(ticketDetails) !== JSON.stringify(saleData.ticketDetails) ||
+      JSON.stringify(normalizedTripSales) !== JSON.stringify(saleData.tripSales) ||
+      JSON.stringify(normalizedExpenses) !== JSON.stringify(saleData.expenses);
 
     if (!hasChanges) {
       toast.info("No changes detected.", {
@@ -157,7 +151,7 @@ const EditDailySalesModal = ({ onClose, saleData, saleId, driverID }) => {
       await updateDoc(salesDocRef, {
         firstDate,
         lastDate,
-        ticketDetails: normalizedTicketDetails,
+        ticketDetails,
         tripSales: normalizedTripSales,
         expenses: normalizedExpenses,
         totals: {
