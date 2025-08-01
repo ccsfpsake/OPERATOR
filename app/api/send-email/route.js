@@ -28,7 +28,7 @@ export async function POST(request) {
             <p><strong>Email:</strong> ${to}</p>
             <p><strong>Password:</strong> ${otp}</p>
             <div style="margin: 20px 0;">
-              <a href="https://drive.google.com/file/d/1TDwO4g-sgOsNGbEpjdwq4wEkfDJhTjnz/view?usp=drive_link" 
+              <a href="https://drive.google.com/file/d/1loFA3onpq8M2UtypNSkRY95_bL95HubJ/view?usp=drive_link" 
                  style="display: inline-block; background-color:rgb(40, 55, 167); color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                  Log in to your driver account
               </a>
@@ -46,7 +46,7 @@ export async function POST(request) {
           <p>Great news! Your driver account has been verified.</p>
           <p>You are now ready to start accepting rides on SAKE.</p>
           <div style="margin: 20px 0;">
-            <a href="https://drive.google.com/file/d/1TDwO4g-sgOsNGbEpjdwq4wEkfDJhTjnz/view?usp=drive_link" 
+            <a href="https://drive.google.com/file/d/1loFA3onpq8M2UtypNSkRY95_bL95HubJ/view?usp=drive_link" 
                style="display: inline-block; background-color:rgb(40, 55, 167); color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
                Log in to your driver account
             </a>
