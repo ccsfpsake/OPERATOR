@@ -223,7 +223,7 @@ const SignupPage = () => {
           {currentStep === 1 && (
             <>
               <div className={styles.inputGroup}>
-                <label htmlFor="companyID" className={styles.label}>Company ID*</label>
+                <label htmlFor="companyID" className={styles.label}>Company Name*</label>
                 <input
                   type="text"
                   id="companyID"
